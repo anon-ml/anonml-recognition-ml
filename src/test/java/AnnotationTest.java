@@ -16,18 +16,19 @@ public class AnnotationTest {
   @Test
   public void annotate() throws IOException {
 
+    // hint: there should not be spaces after each word!
+    
     String tokenizedFile =
-        "Gleich \ndarauf \nentwirft \ner \nseine \nSelbstdarstellung \n" + '"' + "\nHans \nPeter \n"
-            + '"' + "\nin \nenger \nAuseinandersetzung \nmit \ndiesem \nBild \nJesu \n.";
+        "Gleich\ndarauf\nentwirft\ner\nseine\nSelbstdarstellung\n" + '"' + "\nHans\nPeter\n"
+            + '"' + "\nin\nenger\nAuseinandersetzung\nmit\ndiesem\nBild\nJesu\n.";
 
     String result = annotationService.annotateTokenizedFile(tokenizedFile);
     System.out.println("Result: \n \n" + result);
     
     
 
-    assertThat(result, is(containsString("Ecce B-PER")));
-    assertThat(result, is(containsString("homo I-PER")));
-    assertThat(result, is(containsString("Jesu B-PER")));
+    assertThat(result, is(containsString("PER Hans Peter")));
+    assertThat(result, is(containsString("PER Jesu")));
 
   }
 }

@@ -40,7 +40,7 @@ public class AnnotationService implements IAnnotationService {
   private final static String pathToTokenizedFile = basePath + "temp-file-to-annotate.txt";
   private final static String pathToConfig = basePath + "config.properties";
   private final static String pathToOuputFile = basePath + "taggedFile.txt";
-  private final static String pathToModel = basePath + "NewOwnModel";
+  private final static String pathToModel = basePath + "OwnModel";
 
 
   public static void initNERModel() {
@@ -167,15 +167,36 @@ public class AnnotationService implements IAnnotationService {
       initNERModel();
       long initNerModelA = System.currentTimeMillis();
       System.out.println("Time to init: " + (initNerModelA - initNerModelB) + "ms");
+      
+
     }
 
     try {
+      
       setModelDir();
+      
+      File outputtmpFile = new File(modelDirectory, "result.tmp");
+      File outputFile = new File(pathToOuputFile);
+      
+      long initNerModelB = System.currentTimeMillis();
+      
+      // one classifyTestFile run to preload the data.zip
+      c.normalize(Configuration.testFileName, Configuration.testFileName + ".normalized");
+      classifyTestFile(modelDirectory, new File(Configuration.testFileName + ".normalized"),
+          outputtmpFile, null, null);
+      c.deNormalize(outputtmpFile.getAbsolutePath(), outputFile.getAbsolutePath());
+      
+      long initNerModelA = System.currentTimeMillis();
+      System.out.println("Time to preload features: " + (initNerModelA - initNerModelB)/1000 + "s");
+      
+
 
     } catch (Exception e) {
       System.out.println("error in initGermaNER second try-catch");
       e.printStackTrace();
     }
+    
+    
     long endTime = System.currentTimeMillis();
     long totalTime = endTime - startTime;
     System.out.println("Done in " + totalTime / 1000 + " seconds");
@@ -187,9 +208,7 @@ public class AnnotationService implements IAnnotationService {
   // run of classifyTestFile to load all features..
   public String annotateTokenizedFile(String tokenizedFile) {
 
-    initGermaNER();
-
-    // TODO: model is not used right... it just tags with bullshit
+//    initGermaNER();
 
     String content = "";
     File outputtmpFile = new File(modelDirectory, "result.tmp");
