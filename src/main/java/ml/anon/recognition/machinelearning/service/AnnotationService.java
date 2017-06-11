@@ -43,7 +43,7 @@ public class AnnotationService implements IAnnotationService {
   private final static String pathToModel = basePath + "OwnModel";
 
 
-  public static void initNERModel() {
+  private static void initNERModel() {
     System.out.println("initNerModel Accessed");
 
     File dataZip = new File(pathToConfig);
@@ -61,9 +61,7 @@ public class AnnotationService implements IAnnotationService {
     loadConfig();
   }
 
-
-
-  public static void loadConfig() {
+  private static void loadConfig() {
 
     System.out.println("LoadConfig Accessed");
 
@@ -121,7 +119,7 @@ public class AnnotationService implements IAnnotationService {
     }
   }
 
-  public static void classifyTestFile(File aClassifierJarPath, File testPosFile, File outputFile,
+  private static void classifyTestFile(File aClassifierJarPath, File testPosFile, File outputFile,
       File aNodeResultFile, List<Integer> aSentencesIds) throws UIMAException, IOException {
 
     System.out.println("classifyTestFile Accessed");
@@ -272,59 +270,5 @@ public class AnnotationService implements IAnnotationService {
     System.out.println("Content: \n\n" + content);
     return content;
   }
-
-
-
-  @Override
-  public String annotateTokenizedFiletest(String tokenizedFile) {
-
-    String pathToDataZip = basePath + "data.zip";
-    String pathToModel = basePath + "OwnModel";
-    String pathToConfig = basePath + "config.properties";
-    String pathToTokenizedFile = basePath + "temp-file-to-annotate.txt";
-    String pathToOuputFile = basePath + "taggedFile.txt";
-
-    PrintWriter out;
-    try {
-
-
-      /**
-       * Pom of webAnno : ui-automation for mira pom
-       */
-      out = new PrintWriter(pathToTokenizedFile);
-      out.println(tokenizedFile);
-      out.close();
-
-      String[] arg0 = {"-t", pathToTokenizedFile, "-r", pathToDataZip, "-d", pathToModel, "-o",
-          pathToOuputFile, "-c", pathToConfig};
-      GermaNERMain.main(arg0);
-      File fileDir = new File(pathToOuputFile);
-      BufferedReader in =
-          new BufferedReader(new InputStreamReader(new FileInputStream(fileDir), "UTF8"));
-      String result = "";
-
-      while ((result += in.readLine()) != null) {
-
-      }
-
-      in.close();
-      System.exit(1);
-
-      return result;
-
-    } catch (FileNotFoundException e1) {
-      e1.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-
-    return null;
-  }
-
 
 }

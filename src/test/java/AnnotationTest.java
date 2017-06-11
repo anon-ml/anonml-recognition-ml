@@ -4,6 +4,7 @@ import static org.hamcrest.core.Is.is;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ml.anon.recognition.machinelearning.service.AnnotationService;
@@ -14,6 +15,7 @@ public class AnnotationTest {
   private AnnotationService annotationService = new AnnotationService();
 
   @Test
+  @Ignore
   public void annotate() throws IOException {
 
     // hint: there should not be spaces after each word!

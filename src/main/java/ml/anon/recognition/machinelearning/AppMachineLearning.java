@@ -9,8 +9,10 @@ import ml.anon.recognition.machinelearning.service.AnnotationService;
 public class AppMachineLearning {
 
     public static void main(String[] args){
-        AnnotationService.initGermaNER();
+//        AnnotationService.initGermaNER();
         SpringApplication.run(AppMachineLearning.class, args);
+        
+        
 
     }
 }
