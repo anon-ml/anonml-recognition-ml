@@ -43,7 +43,7 @@ public class AnnotationService implements IAnnotationService {
   private final static String pathToModel = basePath + "OwnModel";
 
 
-  private static void initNERModel() {
+  public static void initNERModel() {
     System.out.println("initNerModel Accessed");
 
     File dataZip = new File(pathToConfig);
@@ -123,10 +123,10 @@ public class AnnotationService implements IAnnotationService {
       File aNodeResultFile, List<Integer> aSentencesIds) throws UIMAException, IOException {
 
     System.out.println("classifyTestFile Accessed");
+    System.out.println(aClassifierJarPath.getAbsolutePath());
 
     runPipeline(FilesCollectionReader.getCollectionReaderWithSuffixes(testPosFile.getAbsolutePath(),
         NERReader.CONLL_VIEW, testPosFile.getName()),
-
         createEngine(NERReader.class),
         createEngine(NERAnnotator.class, NERAnnotator.PARAM_FEATURE_EXTRACTION_FILE,
             aClassifierJarPath.getAbsolutePath() + "/feature.xml", NERAnnotator.FEATURE_FILE,
@@ -206,7 +206,7 @@ public class AnnotationService implements IAnnotationService {
   // run of classifyTestFile to load all features..
   public String annotateTokenizedFile(String tokenizedFile) {
 
-//    initGermaNER();
+    initGermaNER();
 
     String content = "";
     File outputtmpFile = new File(modelDirectory, "result.tmp");
@@ -221,7 +221,7 @@ public class AnnotationService implements IAnnotationService {
       out.println(tokenizedFile);
       out.close();
 
-
+      
       c.normalize(Configuration.testFileName, Configuration.testFileName + ".normalized");
 
 
@@ -270,5 +270,6 @@ public class AnnotationService implements IAnnotationService {
     System.out.println("Content: \n\n" + content);
     return content;
   }
+ 
 
 }

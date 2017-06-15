@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import ml.anon.recognition.machinelearning.service.AnnotationService;
 import ml.anon.recognition.machinelearning.service.IAnnotationService;
 
 /**
@@ -19,6 +21,9 @@ public class MLController {
 
   @Autowired
   IAnnotationService annotationService;
+  
+  @Autowired
+  AnnotationService annotationServiceImpl;
 
   @RequestMapping(value = "/ml/annotate", method = RequestMethod.POST)
   public ResponseEntity<?> annotate(@RequestParam("tokenizedFile") String tokenizedFile)
@@ -33,11 +38,11 @@ public class MLController {
    * @return
    */
   @RequestMapping(value = "/testAnnotate", method = RequestMethod.GET)
-  public String index() {
+  public void init() {
     System.out.println("testAnnotate accessed!");
     
+    annotationServiceImpl.initGermaNER();
     
-    return "index.html";
   }
   
 

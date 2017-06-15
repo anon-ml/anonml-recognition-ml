@@ -288,6 +288,7 @@ public class NERReader
         throws IOException
     {
 
+      //TODO changed the data.zip path here
     	System.out.println("Get Reader accessed!");
     	String basePath = "./src/main/resources/GermaNER/";
     	File dataZip = new File(basePath + "data.zip");

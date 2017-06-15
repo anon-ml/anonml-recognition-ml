@@ -17,14 +17,6 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-	<repositories>
-		<repository>
-			<id>nexus</id>
-			<name>acme nexus</name>
-			<url>http://localhost:8081/nexus/content/repositories/snapshots</url>
-		</repository>
-	</repositories>
-
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -39,16 +31,17 @@
 	</properties>
 
 	<dependencies>
-		<!-- causes java.lang.NoSuchFieldError: INSTANCE -->
-		<dependency> <groupId>germaner</groupId> 
-			<artifactId>de.tu.darmstadt.lt.ner</artifactId> <version>1.0</version> <scope>system</scope> 
-			<systemPath>${project.basedir}/src/main/resources/GermaNER/GermaNER-train.jar</systemPath> 
-		</dependency> 
-		<!--<dependency>
-			<groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
+		<dependency>
+			<groupId>de.tudarmstadt.lt</groupId>
 			<artifactId>de.tu-darmstadt.lt.ner</artifactId>
 			<version>0.2.0-SNAPSHOT</version>
-		</dependency> -->
+		</dependency>
+
+		<!-- causes java.lang.NoSuchFieldError: INSTANCE <dependency> <groupId>germaner</groupId> 
+			<artifactId>de.tu.darmstadt.lt.ner</artifactId> <version>1.0</version> <scope>system</scope> 
+			<systemPath>${project.basedir}/src/main/resources/GermaNER/GermaNER-train.jar</systemPath> 
+			</dependency> -->
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
