@@ -13,6 +13,8 @@
 .recommenders
 src/main/resources/GermaNER/*
 bin
+!crfsuite/windows_x86_32/bin
+!crfsuite/osx_x86_64/bin
 build
 lib/
 target
