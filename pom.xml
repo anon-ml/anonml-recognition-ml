@@ -37,10 +37,11 @@
 			<version>0.2.0-SNAPSHOT</version>
 		</dependency>
 
-		<!-- causes java.lang.NoSuchFieldError: INSTANCE <dependency> <groupId>germaner</groupId> 
-			<artifactId>de.tu.darmstadt.lt.ner</artifactId> <version>1.0</version> <scope>system</scope> 
-			<systemPath>${project.basedir}/src/main/resources/GermaNER/GermaNER-train.jar</systemPath> 
-			</dependency> -->
+        <dependency>
+            <groupId>ml.anon</groupId>
+            <artifactId>core</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
