@@ -26,7 +26,7 @@ public class AnnotationService implements IAnnotationService {
     private final static String pathToTokenizedFile = basePath + "temp-file-to-annotate.txt";
     private final static String pathToConfig = basePath + "config.properties";
     private final static String pathToOuputFile = basePath + "taggedFile.txt";
-    private final static String pathToModel = basePath + "OwnModel";
+    private final static String pathToModel = basePath + "model";
     static Properties prop;
     static InputStream configFile = null;
     static File modelDirectory;

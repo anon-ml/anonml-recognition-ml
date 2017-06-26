@@ -11,7 +11,7 @@
 .metadata
 .factorypath
 .recommenders
-src/main/resources/GermaNER/*
+src/main/resources/GermaNER/data.zip
 bin
 !crfsuite/windows_x86_32/bin
 !crfsuite/osx_x86_64/bin
@@ -26,6 +26,7 @@ _site/
 .*.md.html
 manifest.yml
 MANIFEST.MF
+!src/main/resources/GermaNER/model/MANIFEST.MF
 settings.xml
 activemq-data
 overridedb.*
@@ -34,6 +35,7 @@ overridedb.*
 *.iws
 .idea
 *.jar
+!src/main/resources/GermaNER/model/model.jar
 .DS_Store
 dump.rdb
 transaction-logs
