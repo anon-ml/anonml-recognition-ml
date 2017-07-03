@@ -203,12 +203,9 @@ public class AnnotationService implements IAnnotationService {
     long endTime = System.currentTimeMillis();
     long totalTime = endTime - startTime;
     System.out.println("Done in " + totalTime / 1000 + " seconds");
-
+    
   }
 
-
-  // TODO: to pre load all it is necessary to start "initGermaNER" by the main and maybe make one
-  // run of classifyTestFile to load all features..
   public List<Anonymization> annotate(Document document) {
 
     // initGermaNER();
@@ -288,6 +285,7 @@ public class AnnotationService implements IAnnotationService {
       if (splitted[1].startsWith("B-")) {
         counter++;
         if (temp == (counter-1)){
+          original = original.trim();
           temp = counter;
           anonymization.original(original);
           anonymization.replacement(replacementGenerator.generateReplacement(original, label));
@@ -307,6 +305,7 @@ public class AnnotationService implements IAnnotationService {
       }
     }
     
+    original = original.trim();
     anonymization.original(original);
     anonymization.replacement(replacementGenerator.generateReplacement(original, label));
     anonymization.label(label);

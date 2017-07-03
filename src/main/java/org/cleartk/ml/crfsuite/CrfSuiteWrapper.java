@@ -169,7 +169,7 @@ public class CrfSuiteWrapper {
 
       f = new File(loc);
       f.setExecutable(true);
-      System.out.println("f" + f.getAbsolutePath());
+      System.out.println("f: " + f.getAbsolutePath());
       return f;
 
 
