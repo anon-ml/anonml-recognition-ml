@@ -100,6 +100,7 @@ public class CrfSuiteWrapper {
 
     public String getExecutablePath() {
 
+      // TODO: improve path
       String[] path = new String[] {"crfsuite", pd.toString(), "bin"};
       String sep = "/";
       String p = "";

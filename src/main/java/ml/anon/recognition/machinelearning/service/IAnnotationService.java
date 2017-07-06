@@ -8,4 +8,6 @@ import ml.anon.model.docmgmt.Document;
 public interface IAnnotationService {
 
   public List<Anonymization> annotate(Document document);
+
+  public boolean retrain();
 }

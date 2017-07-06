@@ -39,6 +39,15 @@ public class MLController {
     return annotationService.annotate(doc);
     
   }
+  
+  @RequestMapping(value = "/ml/retrain/{id}", method = RequestMethod.GET)
+  public boolean retrain(@PathVariable String id) {
+    
+
+    return annotationService.retrain();
+    
+  }
+  
 
 
 }

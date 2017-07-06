@@ -11,3 +11,7 @@ calling germaner, manage temporary blacklists, retrain germaner over night
 
 3. Place the data.zip (contains feature files) in ./src/main/resources/GermaNER
    (data.zip: https://github.com/tudarmstadt-lt/GermaNER/releases/download/germaNER0.9.1/data.zip)
+   
+# Retrain
+
+The training file needs to be in the resources folder (named "trainingsFile.txt")
