@@ -39,6 +39,7 @@ import ml.anon.model.anonymization.Anonymization.AnonymizationBuilder;
 import ml.anon.model.anonymization.Label;
 import ml.anon.model.anonymization.Producer;
 import ml.anon.model.docmgmt.Document;
+import ml.anon.recognition.machinelearning.model.TrainingData;
 
 @Service
 public class AnnotationService implements IAnnotationService {
@@ -49,7 +50,7 @@ public class AnnotationService implements IAnnotationService {
   private final static String pathToConfig = basePath + "config.properties";
   private final static String pathToOuputFile = basePath + "taggedFile.txt";
   private final static String pathToModel = basePath + "model";
-  private final static String pathToTrainingFile = basePath + "trainingsFile.txt";
+  public final static String pathToTrainingFile = basePath + "trainingsFile.txt";
   static Properties prop;
   static InputStream configFile = null;
   static File modelDirectory;
@@ -341,25 +342,22 @@ public class AnnotationService implements IAnnotationService {
     return anonymizations;
   }
 
-  
-  public boolean retrain() {
-    
 
-//    System.exit(0);
+  public boolean retrain() {
 
     System.out.println("Now retrain!");
-    
+
     Configuration.trainFileName = new File(pathToTrainingFile).getAbsolutePath();
     initNERModel();
-    
+
     try {
       setModelDir();
-      
+
     } catch (IOException e1) {
       e1.printStackTrace();
       return false;
     }
-    
+
     try {
 
       c.normalize(Configuration.trainFileName, Configuration.trainFileName + ".normalized");
@@ -377,7 +375,7 @@ public class AnnotationService implements IAnnotationService {
     } catch (Exception e) {
       e.printStackTrace();
       return false;
-    } 
+    }
 
     return true;
 

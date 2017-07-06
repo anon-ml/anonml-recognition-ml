@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,7 @@ import ml.anon.model.anonymization.Anonymization;
 import ml.anon.model.docmgmt.Document;
 import ml.anon.model.docmgmt.DocumentAccess;
 import ml.anon.recognition.machinelearning.service.IAnnotationService;
+import ml.anon.recognition.machinelearning.service.ITrainingDataService;
 
 /**
  * 
@@ -27,6 +29,9 @@ public class MLController {
   @Resource
   private IAnnotationService annotationService;
   private DocumentAccess documentAccess = new DocumentAccess(new RestTemplate());
+  
+  @Resource
+  private ITrainingDataService trainingDataAccess;
 
 
 
@@ -40,10 +45,18 @@ public class MLController {
     
   }
   
+  @RequestMapping(value = "/ml/update/training/data/{id}", method = RequestMethod.POST)
+  public boolean updateTrainingData(@PathVariable String id) {
+
+    return trainingDataAccess.updateTrainingData(id);
+    
+  }
+  
+  
+  
   @RequestMapping(value = "/ml/retrain/{id}", method = RequestMethod.GET)
   public boolean retrain(@PathVariable String id) {
     
-
     return annotationService.retrain();
     
   }
