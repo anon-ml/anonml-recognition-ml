@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import ml.anon.recognition.machinelearning.ResourceUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.uima.UIMAException;
 import org.cleartk.ml.CleartkSequenceAnnotator;
@@ -39,21 +40,22 @@ import ml.anon.model.anonymization.Anonymization.AnonymizationBuilder;
 import ml.anon.model.anonymization.Label;
 import ml.anon.model.anonymization.Producer;
 import ml.anon.model.docmgmt.Document;
-import ml.anon.recognition.machinelearning.model.TrainingData;
 
 @Service
 public class AnnotationService implements IAnnotationService {
     private final static String basePath = AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
 
-    private final static String pathToTokenizedFile = basePath + "temp-file-to-annotate.txt";
-    private final static String pathToConfig = basePath + "config.properties";
-    private final static String pathToOuputFile = basePath + "taggedFile.txt";
+
+    private final static String pathToTokenizedFile = ResourceUtil.getPath("GermaNER"+File.separator+"temp-file-to-annotate.txt");
+    private final static String pathToConfig = ResourceUtil.getPath("GermaNER"+File.separator+"config.properties");
+    private final static String pathToOuputFile =ResourceUtil.getPath("GermaNER"+File.separator+ "taggedFile.txt");
     private final static String pathToModel = basePath + "model";
-    public final static String pathToTrainingFile = basePath + "trainingsFile.txt";
+    public final static String pathToTrainingFile = ResourceUtil.getPath("GermaNER"+File.separator+ "trainingsFile.txt");
     static Properties prop;
     static InputStream configFile = null;
     static File modelDirectory;
     static ChangeColon c;
+
 
     private static void initNERModel() {
         System.out.println("initNerModel Accessed");
@@ -118,15 +120,15 @@ public class AnnotationService implements IAnnotationService {
         System.out.println("ModelDir: " + Configuration.modelDir);
 
         if (!new File(modelDirectory, "model.jar").exists()) {
-            IOUtils.copyLarge(ClassLoader.getSystemResourceAsStream("model/model.jar"),
+            IOUtils.copyLarge(ResourceUtil.getStream("model/model.jar"),
                     new FileOutputStream(new File(modelDirectory, "model.jar")));
         }
         if (!new File(modelDirectory, "MANIFEST.MF").exists()) {
-            IOUtils.copyLarge(ClassLoader.getSystemResourceAsStream("model/MANIFEST.MF"),
+            IOUtils.copyLarge(ResourceUtil.getStream("model/MANIFEST.MF"),
                     new FileOutputStream(new File(modelDirectory, "MANIFEST.MF")));
         }
         if (!new File(modelDirectory, "feature.xml").exists()) {
-            IOUtils.copyLarge(ClassLoader.getSystemResourceAsStream("feature/feature.xml"),
+            IOUtils.copyLarge(ResourceUtil.getStream("feature/feature.xml"),
                     new FileOutputStream(new File(modelDirectory, "feature.xml")));
         }
     }

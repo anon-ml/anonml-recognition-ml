@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import ml.anon.recognition.machinelearning.ResourceUtil;
 import ml.anon.recognition.machinelearning.service.AnnotationService;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -38,6 +39,7 @@ import org.apache.uima.cas.CASException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.Resource;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
@@ -54,7 +56,7 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 public class NERReader
     extends JCasAnnotator_ImplBase
 {
-    private final static String basePath = NERReader.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
+
     public static final String CONLL_VIEW = "ConnlView";
     private Logger logger = null;
     private static Map<String, String> freebaseMap = new HashMap<String, String>();
@@ -296,24 +298,22 @@ public class NERReader
 
       //TODO changed the data.zip path here
     	System.out.println("Get Reader accessed!");
-    	File dataZip = new File(basePath + "data.zip");
-        InputStream is = new FileInputStream(dataZip.getAbsolutePath());
-    	
-//        InputStream is = ClassLoader.getSystemResourceAsStream("data.zip");
-//        System.out.println(ClassLoader.getSystemResource("data.zip"));
-        
-        System.out.println(dataZip.getAbsolutePath());
-        ZipInputStream zis = new ZipInputStream(is);
+
+
+        ZipInputStream zis = new ZipInputStream( ResourceUtil.getStream("GermaNER"+File.separator+"data.zip"));
         System.out.println(aName);
         
         ZipEntry entry = zis.getNextEntry();
         while (entry != null) {
+            System.out.println("--> "+ entry);
             if (entry.toString().equals(aName)) {
               
             	return new BufferedReader(new InputStreamReader(zis));
             }
             entry = zis.getNextEntry();
+
         }
+        System.out.println("end");
         return null;
     }
 }
