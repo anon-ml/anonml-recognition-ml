@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import ml.anon.recognition.machinelearning.service.AnnotationService;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
@@ -53,7 +54,7 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 public class NERReader
     extends JCasAnnotator_ImplBase
 {
-
+    private final static String basePath = NERReader.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
     public static final String CONLL_VIEW = "ConnlView";
     private Logger logger = null;
     private static Map<String, String> freebaseMap = new HashMap<String, String>();
@@ -295,7 +296,6 @@ public class NERReader
 
       //TODO changed the data.zip path here
     	System.out.println("Get Reader accessed!");
-    	String basePath = "./src/main/resources/GermaNER/";
     	File dataZip = new File(basePath + "data.zip");
         InputStream is = new FileInputStream(dataZip.getAbsolutePath());
     	
