@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-java -Djava.security.egd=file:/dev/./urandom -jar anonml-recognition-ml/target/recognition-ml-0.0.1-SNAPSHOT.jar
+java -Xmx4096m -Djava.security.egd=file:/dev/./urandom -jar anonml-recognition-ml/target/recognition-ml-0.0.1-SNAPSHOT.jar
