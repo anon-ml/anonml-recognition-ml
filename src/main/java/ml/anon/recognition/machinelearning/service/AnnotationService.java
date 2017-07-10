@@ -205,7 +205,7 @@ public class AnnotationService implements IAnnotationService {
 
             setModelDir();
 
-            File outputtmpFile = new File(modelDirectory, "result.tmp");
+            File outputtmpFile = File.createTempFile("result",".tmp");
             File outputFile = new File(pathToOuputFile);
 
             long initNerModelB = System.currentTimeMillis();
@@ -247,7 +247,7 @@ public class AnnotationService implements IAnnotationService {
         }
 
 
-        File outputtmpFile = new File(modelDirectory, "result.tmp");
+
         File outputFile = new File(pathToOuputFile);
 
         System.out.println("Start tagging");
@@ -255,7 +255,7 @@ public class AnnotationService implements IAnnotationService {
         PrintWriter out;
         ArrayList<Anonymization> anonymizations = null;
         try (InputStream inputStream = new FileInputStream(outputFile.getAbsolutePath())) {
-
+            File outputtmpFile = File.createTempFile("result",".tmp");
             out = new PrintWriter(pathToTokenizedFile);
             out.println(tokenizedFile);
             out.close();
@@ -273,10 +273,12 @@ public class AnnotationService implements IAnnotationService {
         } catch (UIMAException e) {
             // TODO Auto-generated catch block
             System.out.println("error in annotateTokenizedFile first catch");
+            System.err.println(e.getLocalizedMessage());
             e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             System.out.println("error in annotateTokenizedFile second catch");
+            System.err.println(e.getLocalizedMessage());
             e.printStackTrace();
         }
 

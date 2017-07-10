@@ -15,3 +15,4 @@ calling germaner, manage temporary blacklists, retrain germaner over night
 # Retrain
 
 The training file needs to be in the resources folder (named "trainingsFile.txt")
+https://docs.docker.com/engine/userguide/storagedriver/selectadriver/#other-considerations

@@ -47,7 +47,7 @@ RUN brew tap homebrew/science
 RUN brew install crfsuite
 #RUN wget https://github.com/downloads/chokkan/crfsuite/crfsuite-0.12.tar.gz && tar xvzf crfsuite-0.12.tar.gz && cd crfsuite-0.12 && ./configure && make && make install
 
-RUN echo "WTF9"
+RUN echo "12"
 COPY /target/recognition-ml-0.0.1-SNAPSHOT.jar anonml-recognition-ml/target/
 
 EXPOSE 9003
