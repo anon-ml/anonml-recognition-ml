@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.extern.slf4j.Slf4j;
 import ml.anon.recognition.machinelearning.ResourceUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.uima.UIMAException;
@@ -42,6 +43,7 @@ import ml.anon.model.anonymization.Producer;
 import ml.anon.model.docmgmt.Document;
 
 @Service
+@Slf4j
 public class AnnotationService implements IAnnotationService {
     private final static String basePath = AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
 
@@ -301,7 +303,7 @@ public class AnnotationService implements IAnnotationService {
 
         String line;
         String original = "";
-        Label label = null;
+        Label label = Label.MISC;
         int counter = 0;
         int temp = 1;
         while ((line = in.readLine()) != null) {
@@ -324,9 +326,10 @@ public class AnnotationService implements IAnnotationService {
                     original = "";
 
                 }
-                label = Label.valueOf(splitted[1].substring(2)); // Label - must exactly match!
+            //    label = Label.valueOf(splitted[1].substring(2)); // Label - must exactly match!
 
                 original += " " + splitted[0]; // 1. Teil des Tags
+                log.debug(line);
             } else if (splitted[1].startsWith("I-")) {
                 original += " " + splitted[0]; // 2. - n. Teil des tags
             } else {
