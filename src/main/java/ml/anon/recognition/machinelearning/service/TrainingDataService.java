@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -41,10 +40,12 @@ public class TrainingDataService implements ITrainingDataService{
 //    TrainingData trainingData = repo.findAll().get(0);
 
     List<String> annotations = new ArrayList<String>();
+    List<Integer> indexesOf = this.indexOfAll("", document.getChunks());
     for (int i = 0; i < document.getChunks().size(); ++i) {
-      annotations.add("O");
+      if(!indexesOf.contains(new Integer(i))){
+        annotations.add("O");
+      }
     }
-
 
     for (Anonymization anonymization : document.getAnonymizations()) {
 
@@ -55,14 +56,13 @@ public class TrainingDataService implements ITrainingDataService{
 
 
         List<String> tokensOfOriginal = this.tokenize(anonymization.getOriginal());
-        List<Integer> indexesOf = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
+        indexesOf = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
 
         for (int i = 1; i < tokensOfOriginal.size(); ++i) {
 
           List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), document.getChunks());
           for (Integer integer : indexes) {
             if (!indexesOf.contains(integer - i)) {
-//              indexesOf.remove(integer - i);
               indexesOf.remove(new Integer(integer-i));
             }
           }
@@ -83,12 +83,7 @@ public class TrainingDataService implements ITrainingDataService{
     // trainingData.addTokens(document.getChunks());
     // trainingData.addAnnotaions(annotations);
     // restTemplate.put(IP + "/training/" + id, trainingData);
-    
-    
- 
     this.appendToExisting(TrainingData.builder().annotations(annotations).tokens(document.getChunks()).build());
-
-
 
     return true;
   }
