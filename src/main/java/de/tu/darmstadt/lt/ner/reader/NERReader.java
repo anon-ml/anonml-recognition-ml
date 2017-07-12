@@ -30,6 +30,8 @@ import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import ml.anon.recognition.machinelearning.ResourceUtil;
+import ml.anon.recognition.machinelearning.service.AnnotationService;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
@@ -37,6 +39,7 @@ import org.apache.uima.cas.CASException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.Resource;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
 import org.apache.uima.util.Logger;
@@ -51,39 +54,35 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 
 public class NERReader
-    extends JCasAnnotator_ImplBase
-{
+        extends JCasAnnotator_ImplBase {
 
     public static final String CONLL_VIEW = "ConnlView";
     private Logger logger = null;
     private static Map<String, String> freebaseMap = new HashMap<String, String>();
     private static Map<String, String> suffixClassMap = new HashMap<String, String>();
-    
+
     public static final String DATA_ZIP_FILE = "datazipfile";
     @ConfigurationParameter(name = DATA_ZIP_FILE, mandatory = false)
     private static String datazipfile = null;
 
-    public static HashMap<String, BufferedReader>cachedReaders = new HashMap<String, BufferedReader>();
-    
+    public static HashMap<String, BufferedReader> cachedReaders = new HashMap<String, BufferedReader>();
+
     @Override
     public void initialize(UimaContext context)
-        throws ResourceInitializationException
-    {
+            throws ResourceInitializationException {
         super.initialize(context);
         logger = context.getLogger();
     }
 
     @Override
     public void process(JCas jcas)
-        throws AnalysisEngineProcessException
-    {
+            throws AnalysisEngineProcessException {
         JCas docView;
         String tbText;
         try {
             docView = jcas.getView(CAS.NAME_DEFAULT_SOFA);
             tbText = jcas.getView(CONLL_VIEW).getDocumentText();
-        }
-        catch (CASException e) {
+        } catch (CASException e) {
             throw new AnalysisEngineProcessException(e);
         }
         // a new sentence always starts with a new line
@@ -103,18 +102,18 @@ public class NERReader
         if (Configuration.useFreeBase) {
             try {
                 useFreaBase();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // TODO
+                e.printStackTrace();
             }
         }
 
         if (Configuration.useClarkPosInduction) {
             try {
                 useClarkPosInduction();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // TODO
+                e.printStackTrace();
             }
         }
         StringBuffer sentenceSb = new StringBuffer();
@@ -136,8 +135,7 @@ public class NERReader
                 // init new sentence with the next recognized token
                 initSentence = true;
                 sentenceSb = new StringBuffer();
-            }
-            else {
+            } else {
                 String[] tag = line.split("\\t");
                 String word = tag[0];
                 NamedEntity = tag[tag.length - 1];
@@ -181,7 +179,7 @@ public class NERReader
                         Level.FINE,
                         "NamedEnity: ["
                                 + docText.substring(NamedEntityTag.getBegin(),
-                                        NamedEntityTag.getEnd()) + "]" + NamedEntityTag.getBegin()
+                                NamedEntityTag.getEnd()) + "]" + NamedEntityTag.getBegin()
                                 + "\t" + NamedEntityTag.getEnd());
             }
         }
@@ -190,7 +188,7 @@ public class NERReader
                 getngramBasedFreebaseList(sentenceSb);
             }
         }
-        
+
         if (sentence != null && token != null) {
             terminateSentence(sentence, token, docText);
         }
@@ -198,10 +196,10 @@ public class NERReader
         docView.setSofaDataString(docText.toString(), "text/plain");
     }
 
-    private void getngramBasedFreebaseList(StringBuffer sentenceSb)
-    {
+    private void getngramBasedFreebaseList(StringBuffer sentenceSb) {
         // do 1-5 gram freebase checklists
-        outer: for (String sentToken : sentenceSb.toString().trim().split(" ")) {
+        outer:
+        for (String sentToken : sentenceSb.toString().trim().split(" ")) {
             for (int i = 5; i > 0; i--) {
                 try {
                     for (String nGramToken : GenerateNgram.generateNgramsUpto(
@@ -214,16 +212,14 @@ public class NERReader
                                 FreeBaseFeature.freebaseFeature.add("B-"
                                         + NERReader.freebaseMap.get(nGramToken));
                                 continue outer;
-                            }
-                            else {
+                            } else {
                                 FreeBaseFeature.freebaseFeature.add("I-"
                                         + NERReader.freebaseMap.get(nGramToken));
                                 continue outer;
                             }
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     FreeBaseFeature.freebaseFeature.add("none");
                     continue outer;
                 }
@@ -232,8 +228,7 @@ public class NERReader
         }
     }
 
-    private void terminateSentence(Sentence sentence, Token token, StringBuffer docText)
-    {
+    private void terminateSentence(Sentence sentence, Token token, StringBuffer docText) {
         sentence.setEnd(token.getEnd());
         sentence.addToIndexes();
         logger.log(Level.FINE,
@@ -242,78 +237,71 @@ public class NERReader
     }
 
     private void useFreaBase()
-        throws Exception
-    {
-    	if(NERReader.freebaseMap.isEmpty()){    	
-	        BufferedReader reader = (BufferedReader) getReader("freebase_2502.txt3");
-	        String line;
-	        while ((line = reader.readLine()) != null) {
-	            try {
-	                StringTokenizer st = new StringTokenizer(line, "\t");
-	                NERReader.freebaseMap.put(st.nextToken(), st.nextToken());
-	            }
-	            catch (Exception e) {
-	               // System.out.println("Warning: check if the freebase list file is correct, Some entries are wrong. " + e.getMessage());
-	            }
-	        }
-    	}
+            throws Exception {
+        if (NERReader.freebaseMap.isEmpty()) {
+            BufferedReader reader = (BufferedReader) getReader("freebase_2502.txt3");
+            String line;
+            while ((line = reader.readLine()) != null) {
+                try {
+                    StringTokenizer st = new StringTokenizer(line, "\t");
+                    NERReader.freebaseMap.put(st.nextToken(), st.nextToken());
+                } catch (Exception e) {
+                    // System.out.println("Warning: check if the freebase list file is correct, Some entries are wrong. " + e.getMessage());
+                }
+            }
+        }
     }
 
     public void useClarkPosInduction()
-        throws Exception
-    {
-    	if( ClarkPosInduction.posInduction.isEmpty()){
-	        BufferedReader reader = (BufferedReader) getReader("clark10m256");
-	        String line;
-	        while ((line = reader.readLine()) != null) {
-	            try {
-	                String[] sample = line.split("\\t");
-	                String word = sample[0];
-	                // the class is mostly at the end of the column
-	                String wordClass = sample[sample.length - 1];
-	                ClarkPosInduction.posInduction.put(word, wordClass);
-	            }
-	            catch (Exception e) {
-	               // System.out.println("Warning: check if the clark POS induction list file is correct "
-	                 //       + e.getMessage());
-	            }
-	        }
-	
-	        reader.close();
-    	}
+            throws Exception {
+        if (ClarkPosInduction.posInduction.isEmpty()) {
+            BufferedReader reader = (BufferedReader) getReader("clark10m256");
+            String line;
+            while ((line = reader.readLine()) != null) {
+                try {
+                    String[] sample = line.split("\\t");
+                    String word = sample[0];
+                    // the class is mostly at the end of the column
+                    String wordClass = sample[sample.length - 1];
+                    ClarkPosInduction.posInduction.put(word, wordClass);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Warning: check if the clark POS induction list file is correct "
+                            + e.getMessage());
+                }
+            }
+            reader.close();
+        }
     }
 
     /**
      * Change the path of the data.zip here!
+     *
      * @param aName
      * @return
      * @throws IOException
      */
     public Reader getReader(String aName)
-        throws IOException
-    {
+            throws IOException {
 
-      //TODO changed the data.zip path here
-    	System.out.println("Get Reader accessed!");
-    	String basePath = "./src/main/resources/GermaNER/";
-    	File dataZip = new File(basePath + "data.zip");
-        InputStream is = new FileInputStream(dataZip.getAbsolutePath());
-    	
-//        InputStream is = ClassLoader.getSystemResourceAsStream("data.zip");
-//        System.out.println(ClassLoader.getSystemResource("data.zip"));
-        
-        System.out.println(dataZip.getAbsolutePath());
-        ZipInputStream zis = new ZipInputStream(is);
+        //TODO changed the data.zip path here
+        System.out.println("Get Reader accessed!");
+
+
+        ZipInputStream zis = new ZipInputStream(ResourceUtil.getStream("GermaNER" + File.separator + "data.zip"));
         System.out.println(aName);
-        
+
         ZipEntry entry = zis.getNextEntry();
         while (entry != null) {
+            System.out.println("--> " + entry);
             if (entry.toString().equals(aName)) {
-              
-            	return new BufferedReader(new InputStreamReader(zis));
+
+                return new BufferedReader(new InputStreamReader(zis));
             }
             entry = zis.getNextEntry();
+
         }
+        System.out.println("end");
         return null;
     }
 }
