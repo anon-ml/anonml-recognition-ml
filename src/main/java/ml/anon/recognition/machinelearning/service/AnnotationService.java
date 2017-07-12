@@ -35,7 +35,7 @@ import de.tu.darmstadt.lt.ner.preprocessing.Configuration;
 import de.tu.darmstadt.lt.ner.preprocessing.GermaNERMain;
 import de.tu.darmstadt.lt.ner.reader.NERReader;
 import de.tu.darmstadt.lt.ner.writer.EvaluatedNERWriter;
-import ml.anon.annotation.ReplacementGenerator;
+import ml.anon.annotation.ReplacementAccess;
 import ml.anon.model.anonymization.Anonymization;
 import ml.anon.model.anonymization.Anonymization.AnonymizationBuilder;
 import ml.anon.model.anonymization.Label;
@@ -290,7 +290,7 @@ public class AnnotationService implements IAnnotationService {
     private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream)
             throws IOException {
         ArrayList<Anonymization> anonymizations;
-        ReplacementGenerator replacementGenerator = new ReplacementGenerator();
+        ReplacementAccess replacementGenerator = new ReplacementAccess();
 
         Reader inputStreamReader = new InputStreamReader(inputStream);
         BufferedReader in = new BufferedReader(inputStreamReader);
@@ -319,14 +319,18 @@ public class AnnotationService implements IAnnotationService {
                     original = original.trim();
                     temp = counter;
                     anonymization.original(original);
-                    anonymization.replacement(replacementGenerator.generateReplacement(original, label));
+                    try {
+                        anonymization.replacement(replacementGenerator.generateReplacement(original, label));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     anonymization.label(label);
 
                     anonymizations.add(anonymization.build());
                     original = "";
 
                 }
-            //    label = Label.valueOf(splitted[1].substring(2)); // Label - must exactly match!
+                label = Label.valueOf(splitted[1].substring(2)); // Label - must exactly match!
 
                 original += " " + splitted[0]; // 1. Teil des Tags
                 log.debug(line);
