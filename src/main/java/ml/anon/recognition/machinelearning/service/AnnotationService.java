@@ -48,11 +48,11 @@ public class AnnotationService implements IAnnotationService {
     private final static String basePath = AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
 
 
-    private final static String pathToTokenizedFile = ResourceUtil.getPath("GermaNER"+File.separator+"temp-file-to-annotate.txt");
-    private final static String pathToConfig = ResourceUtil.getPath("GermaNER"+File.separator+"config.properties");
-    private final static String pathToOuputFile =ResourceUtil.getPath("GermaNER"+File.separator+ "taggedFile.txt");
+    private final static String pathToTokenizedFile = ResourceUtil.getPath("GermaNER" + File.separator + "temp-file-to-annotate.txt");
+    private final static String pathToConfig = ResourceUtil.getPath("GermaNER" + File.separator + "config.properties");
+    private final static String pathToOuputFile = ResourceUtil.getPath("GermaNER" + File.separator + "taggedFile.txt");
     private final static String pathToModel = basePath + "model";
-    public final static String pathToTrainingFile = ResourceUtil.getPath("GermaNER"+File.separator+ "trainingsFile.txt");
+    public final static String pathToTrainingFile = ResourceUtil.getPath("GermaNER" + File.separator + "trainingsFile.txt");
     static Properties prop;
     static InputStream configFile = null;
     static File modelDirectory;
@@ -207,7 +207,7 @@ public class AnnotationService implements IAnnotationService {
 
             setModelDir();
 
-            File outputtmpFile = File.createTempFile("result",".tmp");
+            File outputtmpFile = File.createTempFile("result", ".tmp");
             File outputFile = new File(pathToOuputFile);
 
             long initNerModelB = System.currentTimeMillis();
@@ -249,7 +249,6 @@ public class AnnotationService implements IAnnotationService {
         }
 
 
-
         File outputFile = new File(pathToOuputFile);
 
         System.out.println("Start tagging");
@@ -257,7 +256,7 @@ public class AnnotationService implements IAnnotationService {
         PrintWriter out;
         ArrayList<Anonymization> anonymizations = null;
         try (InputStream inputStream = new FileInputStream(outputFile.getAbsolutePath())) {
-            File outputtmpFile = File.createTempFile("result",".tmp");
+            File outputtmpFile = File.createTempFile("result", ".tmp");
             out = new PrintWriter(pathToTokenizedFile);
             out.println(tokenizedFile);
             out.close();
@@ -319,18 +318,17 @@ public class AnnotationService implements IAnnotationService {
                     original = original.trim();
                     temp = counter;
                     anonymization.original(original);
-                    try {
-                        anonymization.replacement(replacementGenerator.generateReplacement(original, label));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+
+                    anonymization.replacement(replacementGenerator.generateReplacement(original, label));
+
                     anonymization.label(label);
 
                     anonymizations.add(anonymization.build());
                     original = "";
 
                 }
-                label = Label.valueOf(splitted[1].substring(2)); // Label - must exactly match!
+                String substring = splitted[1].substring(2);
+                label = Label.getOrDefault(substring, Label.UNKNOWN); // Label - must exactly match!
 
                 original += " " + splitted[0]; // 1. Teil des Tags
                 log.debug(line);
