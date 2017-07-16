@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
-import ml.anon.recognition.machinelearning.ResourceUtil;
+import ml.anon.io.ResourceUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.uima.UIMAException;
 import org.cleartk.ml.CleartkSequenceAnnotator;
