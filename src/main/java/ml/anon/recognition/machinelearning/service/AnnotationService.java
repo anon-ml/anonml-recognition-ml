@@ -40,7 +40,7 @@ import ml.anon.model.anonymization.Anonymization;
 import ml.anon.model.anonymization.Anonymization.AnonymizationBuilder;
 import ml.anon.model.anonymization.Label;
 import ml.anon.model.anonymization.Producer;
-import ml.anon.model.docmgmt.Document;
+import ml.anon.documentmanagement.model.Document;
 
 @Service
 @Slf4j

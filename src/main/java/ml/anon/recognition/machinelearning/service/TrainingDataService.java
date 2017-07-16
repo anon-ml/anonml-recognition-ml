@@ -17,8 +17,8 @@ import org.springframework.web.client.RestTemplate;
 
 import ml.anon.model.anonymization.Anonymization;
 import ml.anon.model.anonymization.Label;
-import ml.anon.model.docmgmt.Document;
-import ml.anon.model.docmgmt.DocumentAccess;
+import ml.anon.documentmanagement.model.Document;
+import ml.anon.documentmanagement.resource.DocumentResource;
 import ml.anon.recognition.machinelearning.model.TrainingData;
 import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
 
@@ -34,7 +34,7 @@ public class TrainingDataService implements ITrainingDataService{
 
   public boolean updateTrainingData(String id) {
 
-    DocumentAccess access = new DocumentAccess(new RestTemplate());
+    DocumentResource access = new DocumentResource(new RestTemplate());
     Document document = access.getDocument(id).getBody();
 
 //    TrainingData trainingData = repo.findAll().get(0);
