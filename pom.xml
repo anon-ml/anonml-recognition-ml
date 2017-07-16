@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>ml.anon</groupId>
-  <artifactId>recognition-ml</artifactId>
+  <artifactId>recognition-machinelearning</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <modules>
     <module>api</module>
@@ -13,7 +13,7 @@
   </modules>
   <packaging>pom</packaging>
 
-  <name>recognition-ml</name>
+  <name>recognition-machinelearning</name>
 
   <distributionManagement>
     <snapshotRepository>
