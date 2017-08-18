@@ -7,19 +7,19 @@ import lombok.Data;
 
 @Data
 @Builder
-@org.springframework.data.mongodb.core.mapping.Document(collection = "training")
+@org.springframework.data.mongodb.core.mapping.Document(collection = "TrainingData")
 public class TrainingData {
 
   private String id;
   private List<String> tokens;
   private List<String> annotations;
-  
-  public boolean addTokens(List<String> tokens){
+
+  public boolean addTokens(List<String> tokens) {
     return this.tokens.addAll(tokens);
   }
-  
-  public boolean addAnnotaions(List<String> annotation){
+
+  public boolean addAnnotaions(List<String> annotation) {
     return this.annotations.addAll(annotation);
   }
-  
+
 }
