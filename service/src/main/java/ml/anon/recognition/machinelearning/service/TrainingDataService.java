@@ -26,7 +26,7 @@ import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
  * @author Matthias
  */
 @Service
-public class TrainingDataService implements ITrainingDataService{
+public class TrainingDataService implements ITrainingDataService {
 
   private RestTemplate restTemplate = new RestTemplate();
 
@@ -35,14 +35,14 @@ public class TrainingDataService implements ITrainingDataService{
   public boolean updateTrainingData(String id) {
 
     DocumentResource access = new DocumentResource(new RestTemplate());
-    Document document = access.getDocument(id).getBody();
+    Document document = access.findById(id);
 
 //    TrainingData trainingData = repo.findAll().get(0);
 
     List<String> annotations = new ArrayList<String>();
     List<Integer> indexesOf = this.indexOfAll("", document.getChunks());
     for (int i = 0; i < document.getChunks().size(); ++i) {
-      if(!indexesOf.contains(new Integer(i))){
+      if (!indexesOf.contains(new Integer(i))) {
         annotations.add("O");
       }
     }
@@ -54,7 +54,6 @@ public class TrainingDataService implements ITrainingDataService{
           || anonymization.getLabel().equals(Label.ORGANIZATION)
           || anonymization.getLabel().equals(Label.LOCATION)) {
 
-
         List<String> tokensOfOriginal = this.tokenize(anonymization.getOriginal());
         indexesOf = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
 
@@ -63,7 +62,7 @@ public class TrainingDataService implements ITrainingDataService{
           List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), document.getChunks());
           for (Integer integer : indexes) {
             if (!indexesOf.contains(integer - i)) {
-              indexesOf.remove(new Integer(integer-i));
+              indexesOf.remove(new Integer(integer - i));
             }
           }
         }
@@ -83,11 +82,11 @@ public class TrainingDataService implements ITrainingDataService{
     // trainingData.addTokens(document.getChunks());
     // trainingData.addAnnotaions(annotations);
     // restTemplate.put(IP + "/training/" + id, trainingData);
-    this.appendToExisting(TrainingData.builder().annotations(annotations).tokens(document.getChunks()).build());
+    this.appendToExisting(
+        TrainingData.builder().annotations(annotations).tokens(document.getChunks()).build());
 
     return true;
   }
-
 
 
   private boolean appendToExisting(TrainingData trainingData) {
@@ -95,11 +94,12 @@ public class TrainingDataService implements ITrainingDataService{
     PrintWriter out;
     try {
       File trainingFile = new File(AnnotationService.pathToTrainingFile);
-      
+
       out = new PrintWriter(new FileOutputStream(trainingFile, true));
 
       for (int i = 0; i < trainingData.getAnnotations().size(); ++i) {
-        System.out.println(trainingData.getTokens().get(i) + " " + trainingData.getAnnotations().get(i));
+        System.out
+            .println(trainingData.getTokens().get(i) + " " + trainingData.getAnnotations().get(i));
 //        out.println(trainingData.getTokens().get(i) + " " + trainingData.getAnnotations().get(i));
       }
 
@@ -116,22 +116,26 @@ public class TrainingDataService implements ITrainingDataService{
 
   private List<Integer> indexOfAll(String token, List<String> list) {
     ArrayList<Integer> indexList = new ArrayList<Integer>();
-    for (int i = 0; i < list.size(); i++)
-      if (token.equals(list.get(i)))
+    for (int i = 0; i < list.size(); i++) {
+      if (token.equals(list.get(i))) {
         indexList.add(i);
+      }
+    }
     return indexList;
   }
 
   private ArrayList<String> tokenize(String original) {
-    
+
     System.out.println("original: " + original);
     HttpHeaders headers = new HttpHeaders();
     headers.set(HttpHeaders.CONTENT_TYPE, "multipart/form-data");
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add("text", original);
-    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map, headers);
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(
+        map, headers);
     return restTemplate
-        .postForObject(URI.create("http://127.0.0.1:9001/document/tokenize/text"), request, ArrayList.class);
+        .postForObject(URI.create("http://127.0.0.1:9001/document/tokenize/text"), request,
+            ArrayList.class);
   }
 
 }

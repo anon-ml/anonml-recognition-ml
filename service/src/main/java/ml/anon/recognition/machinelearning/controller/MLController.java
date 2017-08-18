@@ -18,9 +18,7 @@ import ml.anon.recognition.machinelearning.service.IAnnotationService;
 import ml.anon.recognition.machinelearning.service.ITrainingDataService;
 
 /**
- * 
  * @author Matthias
- *
  */
 @RestController
 public class MLController {
@@ -28,38 +26,33 @@ public class MLController {
   @Resource
   private IAnnotationService annotationService;
   private DocumentResource documentResource = new DocumentResource(new RestTemplate());
-  
+
   @Resource
   private ITrainingDataService trainingDataAccess;
 
 
-
   @RequestMapping(value = "/ml/annotate/{id}", method = RequestMethod.POST)
   public List<Anonymization> annotate(@PathVariable String id) {
-    
-    ResponseEntity<Document> resp = documentResource.getDocument(id);
-    Document doc = resp.getBody();
+    Document doc = documentResource.findById(id);
 
     return annotationService.annotate(doc);
-    
+
   }
-  
+
   @RequestMapping(value = "/ml/update/training/data/{id}", method = RequestMethod.POST)
   public boolean updateTrainingData(@PathVariable String id) {
 
     return trainingDataAccess.updateTrainingData(id);
-    
+
   }
-  
-  
-  
+
+
   @RequestMapping(value = "/ml/retrain/{id}", method = RequestMethod.GET)
   public boolean retrain(@PathVariable String id) {
-    
+
     return annotationService.retrain();
-    
+
   }
-  
 
 
 }
