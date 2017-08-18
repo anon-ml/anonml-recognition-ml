@@ -49,12 +49,12 @@ public class TrainingDataService implements ITrainingDataService {
 
     for (Anonymization anonymization : document.getAnonymizations()) {
 
-      if (anonymization.getLabel().equals(Label.PERSON)
-          || anonymization.getLabel().equals(Label.MISC)
-          || anonymization.getLabel().equals(Label.ORGANIZATION)
-          || anonymization.getLabel().equals(Label.LOCATION)) {
+      if (anonymization.getData().getLabel().equals(Label.PERSON)
+          || anonymization.getData().getLabel().equals(Label.MISC)
+          || anonymization.getData().getLabel().equals(Label.ORGANIZATION)
+          || anonymization.getData().getLabel().equals(Label.LOCATION)) {
 
-        List<String> tokensOfOriginal = this.tokenize(anonymization.getOriginal());
+        List<String> tokensOfOriginal = this.tokenize(anonymization.getData().getOriginal());
         indexesOf = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
 
         for (int i = 1; i < tokensOfOriginal.size(); ++i) {
@@ -70,9 +70,9 @@ public class TrainingDataService implements ITrainingDataService {
         for (Integer occurence : indexesOf) {
           for (int i = 0; i < tokensOfOriginal.size(); ++i) {
             if (i == 0) {
-              annotations.set(occurence + i, "B-" + anonymization.getLabel());
+              annotations.set(occurence + i, "B-" + anonymization.getData().getLabel());
             } else {
-              annotations.set(occurence + i, "I-" + anonymization.getLabel());
+              annotations.set(occurence + i, "I-" + anonymization.getData().getLabel());
             }
           }
         }
