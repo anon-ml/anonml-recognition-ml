@@ -51,10 +51,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Slf4j
 public class AnnotationService implements IAnnotationService {
 
-  private final static String basePath = "." + File.separator + "src" + File.separator + "main"
-          + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
+  //rivate final static String basePath = "." + File.separator + "src" + File.separator + "main"
+       //   + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
 
-    //  AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
+      AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
 
 
   private final static String pathToTokenizedFile = ResourceUtil
