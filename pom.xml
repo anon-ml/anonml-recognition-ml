@@ -26,6 +26,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <start-class>ml.anon.recognition.machinelearning.AppMachineLearning</start-class>
+    <mainClass>ml.anon.recognition.machinelearning.AppMachineLearning</mainClass>
     <java.version>1.8</java.version>
   </properties>
 
@@ -99,10 +101,19 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>1.1.8.RELEASE</version>
         <configuration>
           <mainClass>ml.anon.recognition.machinelearning.AppMachineLearning</mainClass>
 
         </configuration>
+
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
