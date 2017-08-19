@@ -13,12 +13,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import ml.anon.anonymization.model.Replacement;
+import ml.anon.documentmanagement.resource.DocumentResource;
 import ml.anon.io.ResourceUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.uima.UIMAException;
@@ -42,6 +45,7 @@ import ml.anon.anonymization.model.Anonymization.AnonymizationBuilder;
 import ml.anon.anonymization.model.Label;
 import ml.anon.anonymization.model.Producer;
 import ml.anon.documentmanagement.model.Document;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @Service
 @Slf4j
