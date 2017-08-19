@@ -47,8 +47,10 @@ import ml.anon.documentmanagement.model.Document;
 @Slf4j
 public class AnnotationService implements IAnnotationService {
 
-  private final static String basePath =
-      AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
+  private final static String basePath = "." + File.separator + "src" + File.separator + "main"
+          + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
+
+    //  AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
 
 
   private final static String pathToTokenizedFile = ResourceUtil
