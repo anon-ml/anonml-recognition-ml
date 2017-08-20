@@ -14,9 +14,12 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -51,10 +54,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Slf4j
 public class AnnotationService implements IAnnotationService {
 
-  //private final static String basePath = "." + File.separator + "src" + File.separator + "main"
-       //   + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
+  private final static String basePath = "." + File.separator + "src" + File.separator + "main"
+          + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
 
-  private final static String basePath = AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
+  //private final static String basePath = AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
 
 
   private final static String pathToTokenizedFile = ResourceUtil
@@ -247,6 +250,7 @@ public class AnnotationService implements IAnnotationService {
 
   }
 
+  @Override
   public List<Anonymization> annotate(Document document) {
 
     // initGermaNER();
@@ -278,7 +282,7 @@ public class AnnotationService implements IAnnotationService {
       // re-normalized the colon changed text
       c.deNormalize(outputtmpFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
-      anonymizations = receiveAnonymizations(inputStream);
+      anonymizations = receiveAnonymizations(inputStream, document);
 
     } catch (UIMAException e) {
       // TODO Auto-generated catch block
@@ -295,7 +299,7 @@ public class AnnotationService implements IAnnotationService {
     return anonymizations;
   }
 
-  private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream)
+  private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream, Document document)
       throws IOException {
     ArrayList<Anonymization> anonymizations;
     ReplacementResource replacementGenerator = new ReplacementResource();
@@ -326,7 +330,7 @@ public class AnnotationService implements IAnnotationService {
       if (splitted[1].startsWith("B-")) {
         counter++;
         if (temp == (counter - 1)) {
-          original = original.trim();
+          original = this.findOriginal(original.trim(), document);
           temp = counter;
 
           anonymization.data(replacementGenerator
@@ -339,16 +343,16 @@ public class AnnotationService implements IAnnotationService {
         String substring = splitted[1].substring(2);
         label = Label.getOrDefault(substring, Label.UNKNOWN); // Label - must exactly match!
 
-        original += " " + splitted[0]; // 1. Teil des Tags
+        original += splitted[0]; // 1. Teil des Tags
         log.debug(line);
       } else if (splitted[1].startsWith("I-")) {
-        original += " " + splitted[0]; // 2. - n. Teil des tags
+        original += "\\s*" + splitted[0]; // 2. - n. Teil des tags
       } else {
         System.out.println("Unknown type: " + splitted[1]);
       }
     }
 
-    original = original.trim();
+    original = this.findOriginal(original.trim(), document);
     anonymization.data(replacementGenerator
         .create(Replacement.builder().original(original).label(label).build()));
 
@@ -356,6 +360,21 @@ public class AnnotationService implements IAnnotationService {
 
     inputStreamReader.close();
     return anonymizations;
+  }
+
+  private String findOriginal(String originalToFind, Document document){
+
+    String content = document.getFullText();
+
+    Pattern pattern = Pattern.compile(originalToFind);
+    Matcher matcher = pattern.matcher(content);
+
+    matcher.find();
+    int startIndex = matcher.start();
+    int endIndex = matcher.end();
+    
+    return content.substring(startIndex, endIndex);
+
   }
 
 
