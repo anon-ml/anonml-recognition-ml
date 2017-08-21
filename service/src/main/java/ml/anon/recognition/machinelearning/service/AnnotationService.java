@@ -372,7 +372,7 @@ public class AnnotationService implements IAnnotationService {
     matcher.find();
     int startIndex = matcher.start();
     int endIndex = matcher.end();
-    
+
     return content.substring(startIndex, endIndex);
 
   }

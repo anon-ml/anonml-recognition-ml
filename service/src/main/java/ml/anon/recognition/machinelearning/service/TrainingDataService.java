@@ -23,6 +23,7 @@ import ml.anon.recognition.machinelearning.model.TrainingData;
 import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
 
 /**
+ * Service to set up the new trainings file to later on retrain the model and improve the results.
  * @author Matthias
  */
 @Service
@@ -40,10 +41,13 @@ public class TrainingDataService implements ITrainingDataService {
 //    TrainingData trainingData = repo.findAll().get(0);
 
     List<String> annotations = new ArrayList<String>();
-    List<Integer> indexesOf = this.indexOfAll("", document.getChunks());
+    List<Integer> indexesOfToken = this.indexOfAll("", document.getChunks());
     for (int i = 0; i < document.getChunks().size(); ++i) {
-      if (!indexesOf.contains(new Integer(i))) {
+      if (!indexesOfToken.contains(new Integer(i))) {
         annotations.add("O");
+      }
+      else{
+        annotations.add(""); // for the spaces between sentences
       }
     }
 
@@ -55,20 +59,11 @@ public class TrainingDataService implements ITrainingDataService {
           || anonymization.getData().getLabel().equals(Label.LOCATION)) {
 
         List<String> tokensOfOriginal = this.tokenize(anonymization.getData().getOriginal());
-        indexesOf = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
+        indexesOfToken = this.getOccurrencesOfOriginal(document, tokensOfOriginal);
 
-        for (int i = 1; i < tokensOfOriginal.size(); ++i) {
-
-          List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), document.getChunks());
-          for (Integer integer : indexes) {
-            if (!indexesOf.contains(integer - i)) {
-              indexesOf.remove(new Integer(integer - i));
-            }
-          }
-        }
-
-        for (Integer occurence : indexesOf) {
-          for (int i = 0; i < tokensOfOriginal.size(); ++i) {
+        for (Integer occurence : indexesOfToken) {
+          // -1 because of the empty token produced by the tokenizer
+          for (int i = 0; i < tokensOfOriginal.size() - 1; ++i) {
             if (i == 0) {
               annotations.set(occurence + i, "B-" + anonymization.getData().getLabel());
             } else {
@@ -80,12 +75,28 @@ public class TrainingDataService implements ITrainingDataService {
     }
 
     // trainingData.addTokens(document.getChunks());
-    // trainingData.addAnnotaions(annotations);
+    // trainingData.addAnnotations(annotations);
     // restTemplate.put(IP + "/training/" + id, trainingData);
     this.appendToExisting(
         TrainingData.builder().annotations(annotations).tokens(document.getChunks()).build());
 
     return true;
+  }
+
+  private List<Integer> getOccurrencesOfOriginal(Document document, List<String> tokensOfOriginal) {
+    List<Integer> indexesOfToken;
+    indexesOfToken = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
+
+    for (int i = 1; i < tokensOfOriginal.size(); ++i) {
+
+      List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), document.getChunks());
+      for (Integer integer : indexes) {
+        if (!indexesOfToken.contains(integer - i)) {
+          indexesOfToken.remove(new Integer(integer - i));
+        }
+      }
+    }
+    return indexesOfToken;
   }
 
 
@@ -98,11 +109,16 @@ public class TrainingDataService implements ITrainingDataService {
       out = new PrintWriter(new FileOutputStream(trainingFile, true));
 
       for (int i = 0; i < trainingData.getAnnotations().size(); ++i) {
-        System.out
-            .println(trainingData.getTokens().get(i) + " " + trainingData.getAnnotations().get(i));
-//        out.println(trainingData.getTokens().get(i) + " " + trainingData.getAnnotations().get(i));
+        //System.out
+          //  .println(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
+        if(trainingData.getTokens().get(i).equals("")){
+          out.println("");
+        }
+        else {
+          out.println(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
+        }
       }
-
+      System.out.println("File: " + trainingFile.getAbsolutePath());
       out.close();
 
     } catch (FileNotFoundException e2) {
@@ -114,10 +130,10 @@ public class TrainingDataService implements ITrainingDataService {
 
   }
 
-  private List<Integer> indexOfAll(String token, List<String> list) {
+  private List<Integer> indexOfAll(String token, List<String> tokens) {
     ArrayList<Integer> indexList = new ArrayList<Integer>();
-    for (int i = 0; i < list.size(); i++) {
-      if (token.equals(list.get(i))) {
+    for (int i = 0; i < tokens.size(); i++) {
+      if (token.equals(tokens.get(i))) {
         indexList.add(i);
       }
     }
@@ -126,7 +142,7 @@ public class TrainingDataService implements ITrainingDataService {
 
   private ArrayList<String> tokenize(String original) {
 
-    System.out.println("original: " + original);
+   // System.out.println("original: " + original);
     HttpHeaders headers = new HttpHeaders();
     headers.set(HttpHeaders.CONTENT_TYPE, "multipart/form-data");
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();

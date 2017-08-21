@@ -18,7 +18,7 @@ public class TrainingData {
     return this.tokens.addAll(tokens);
   }
 
-  public boolean addAnnotaions(List<String> annotation) {
+  public boolean addAnnotations(List<String> annotation) {
     return this.annotations.addAll(annotation);
   }
 
