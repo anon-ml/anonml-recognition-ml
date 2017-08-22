@@ -6,8 +6,11 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import ml.anon.recognition.machinelearning.model.AnonPlusTokens;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -41,7 +44,9 @@ public class TrainingDataService implements ITrainingDataService {
 //    TrainingData trainingData = repo.findAll().get(0);
 
     List<String> annotations = new ArrayList<String>();
+
     List<Integer> indexesOfToken = this.indexOfAll("", document.getChunks());
+
     for (int i = 0; i < document.getChunks().size(); ++i) {
       if (!indexesOfToken.contains(new Integer(i))) {
         annotations.add("O");
@@ -51,28 +56,30 @@ public class TrainingDataService implements ITrainingDataService {
       }
     }
 
-    for (Anonymization anonymization : document.getAnonymizations()) {
+    List<AnonPlusTokens> anonsWithTokens = this.getAnonPlusTokens(document);
 
-      if (anonymization.getData().getLabel().equals(Label.PERSON)
-          || anonymization.getData().getLabel().equals(Label.MISC)
-          || anonymization.getData().getLabel().equals(Label.ORGANIZATION)
-          || anonymization.getData().getLabel().equals(Label.LOCATION)) {
 
-        List<String> tokensOfOriginal = this.tokenize(anonymization.getData().getOriginal());
-        indexesOfToken = this.getOccurrencesOfOriginal(document, tokensOfOriginal);
+    for (AnonPlusTokens anons : anonsWithTokens) {
+      System.out.println("Anons: "+ anons.getAnonymization().getData().getOriginal());
 
-        for (Integer occurence : indexesOfToken) {
-          // -1 because of the empty token produced by the tokenizer
-          for (int i = 0; i < tokensOfOriginal.size() - 1; ++i) {
-            if (i == 0) {
-              annotations.set(occurence + i, "B-" + anonymization.getData().getLabel());
-            } else {
-              annotations.set(occurence + i, "I-" + anonymization.getData().getLabel());
-            }
+      indexesOfToken = this.getOccurrencesOfOriginal(document, anons.getTokens());
+
+      for (Integer occurence : indexesOfToken) {
+        // -1 because of the empty token produced by the tokenizer
+        for (int i = 0; i < anons.getTokens().size() - 1; ++i) {
+          if (i == 0) {
+            annotations.set(occurence + i, "B-" + anons.getAnonymization().getData().getLabel());
+          } else {
+            annotations.set(occurence + i, "I-" + anons.getAnonymization().getData().getLabel());
           }
         }
       }
+
+
+
     }
+
+
 
     // trainingData.addTokens(document.getChunks());
     // trainingData.addAnnotations(annotations);
@@ -83,20 +90,58 @@ public class TrainingDataService implements ITrainingDataService {
     return true;
   }
 
+  private List<AnonPlusTokens> getAnonPlusTokens(Document document) {
+    List<AnonPlusTokens> anonsWithTokens = new ArrayList<AnonPlusTokens>();
+
+    for (Anonymization anonymization : document.getAnonymizations()) {
+
+      if (anonymization.getData().getLabel().equals(Label.PERSON)
+          || anonymization.getData().getLabel().equals(Label.MISC)
+          || anonymization.getData().getLabel().equals(Label.ORGANIZATION)
+          || anonymization.getData().getLabel().equals(Label.LOCATION)) {
+
+        List<String> tokensOfOriginal = this.tokenize(anonymization.getData().getOriginal());
+
+        anonsWithTokens.add(AnonPlusTokens.builder().anonymization(anonymization).tokens(tokensOfOriginal).build());
+
+      }
+    }
+
+    Collections.sort(anonsWithTokens, new Comparator<AnonPlusTokens>() {
+      @Override
+      public int compare(AnonPlusTokens o1, AnonPlusTokens o2) {
+        if(o1.getTokens().size() == o2.getTokens().size()){
+          return 0;
+        }
+        else if(o1.getTokens().size() > o2.getTokens().size()){
+          return 1;
+        }
+        else{
+          return -1;
+        }
+      }
+    });
+    return anonsWithTokens;
+  }
+
   private List<Integer> getOccurrencesOfOriginal(Document document, List<String> tokensOfOriginal) {
-    List<Integer> indexesOfToken;
-    indexesOfToken = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
 
-    for (int i = 1; i < tokensOfOriginal.size(); ++i) {
+    List<Integer> indexesOfToken = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
+    List<Integer> occurrencesOfSequence = new ArrayList<Integer>(indexesOfToken);
 
+    System.out.println("Size: " + occurrencesOfSequence.size());
+
+    // -1 because of the blank line token
+    for (int i = 1; i < tokensOfOriginal.size()-1; ++i) {
       List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), document.getChunks());
-      for (Integer integer : indexes) {
-        if (!indexesOfToken.contains(integer - i)) {
-          indexesOfToken.remove(new Integer(integer - i));
+
+      for (Integer integer : indexesOfToken) {
+        if (!indexes.contains(integer + i)) {
+          occurrencesOfSequence.remove(integer);
         }
       }
     }
-    return indexesOfToken;
+    return occurrencesOfSequence;
   }
 
 
@@ -106,7 +151,7 @@ public class TrainingDataService implements ITrainingDataService {
     try {
       File trainingFile = new File(AnnotationService.pathToTrainingFile);
 
-      out = new PrintWriter(new FileOutputStream(trainingFile, true));
+      out = new PrintWriter(new FileOutputStream(trainingFile, false));
 
       for (int i = 0; i < trainingData.getAnnotations().size(); ++i) {
         //System.out
