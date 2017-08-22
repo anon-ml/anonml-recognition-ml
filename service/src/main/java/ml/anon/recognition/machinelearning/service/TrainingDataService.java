@@ -156,33 +156,17 @@ public class TrainingDataService implements ITrainingDataService {
 
   private boolean appendToExisting(TrainingData trainingData) {
     // output the actual trainings file
-    PrintWriter out;
-    try {
-      File trainingFile = new File(AnnotationService.pathToTrainingFile);
 
-      out = new PrintWriter(new FileOutputStream(trainingFile, false));
+    for (int i = 0; i < trainingData.getAnnotations().size(); ++i) {
+      if(trainingData.getTokens().get(i).equals("")){
+        trainingData.appendToTrainingTxt("");
 
-      for (int i = 0; i < trainingData.getAnnotations().size(); ++i) {
-        if(trainingData.getTokens().get(i).equals("")){
-          trainingData.appendToTrainingTxt("");
-          //out.println("");
-        }
-        else {
-          trainingData.appendToTrainingTxt(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
-          //out.println(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
-        }
+      } else {
+        trainingData.appendToTrainingTxt(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
       }
-      System.out.println("File: " + trainingFile.getAbsolutePath());
-
-      out.close();
-
-    } catch (FileNotFoundException e2) {
-      e2.printStackTrace();
-      return false;
     }
-
+    System.out.println("File: " + trainingFile.getAbsolutePath());
     return true;
-
   }
 
   private List<Integer> indexOfAll(String token, List<String> tokens) {
