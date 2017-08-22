@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import ml.anon.recognition.machinelearning.model.AnonPlusTokens;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -34,14 +35,24 @@ public class TrainingDataService implements ITrainingDataService {
 
   private RestTemplate restTemplate = new RestTemplate();
 
-  private TrainingDataRepository repo;
+  @Autowired
+  private TrainingDataRepository trainingDataRepository;
 
   public boolean updateTrainingData(String id) {
 
     DocumentResource access = new DocumentResource(new RestTemplate());
     Document document = access.findById(id);
 
-//    TrainingData trainingData = repo.findAll().get(0);
+    List<TrainingData> trainingDataList = trainingDataRepository.findAll();
+    TrainingData trainingData = null;
+    if(trainingDataList.size() == 0){
+      trainingData = TrainingData.builder().tokens(new ArrayList<String>()).annotations(new ArrayList<String>()).trainingTxt("").build();
+    }else if(trainingDataList.size() == 1) {
+      trainingData = trainingDataList.get(0);
+    }else{
+
+      System.out.print("Error: more then one trainingData file found!");
+    }
 
     List<String> annotations = new ArrayList<String>();
 
@@ -74,19 +85,17 @@ public class TrainingDataService implements ITrainingDataService {
           }
         }
       }
-
-
-
     }
 
+    trainingData.addTokens(document.getChunks());
+    trainingData.addAnnotations(annotations);
+    this.appendToExisting(trainingData);
+       // TrainingData.builder().annotations(annotations).tokens(document.getChunks()).build());
+    trainingDataRepository.save(trainingData);
 
-
-    // trainingData.addTokens(document.getChunks());
-    // trainingData.addAnnotations(annotations);
-    // restTemplate.put(IP + "/training/" + id, trainingData);
-    this.appendToExisting(
-        TrainingData.builder().annotations(annotations).tokens(document.getChunks()).build());
-
+    System.out.println("############################################");
+    System.out.println(trainingDataRepository.findAll().get(0).getTrainingTxt());
+    System.out.println("############################################");
     return true;
   }
 
@@ -154,16 +163,17 @@ public class TrainingDataService implements ITrainingDataService {
       out = new PrintWriter(new FileOutputStream(trainingFile, false));
 
       for (int i = 0; i < trainingData.getAnnotations().size(); ++i) {
-        //System.out
-          //  .println(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
         if(trainingData.getTokens().get(i).equals("")){
-          out.println("");
+          trainingData.appendToTrainingTxt("");
+          //out.println("");
         }
         else {
-          out.println(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
+          trainingData.appendToTrainingTxt(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
+          //out.println(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
         }
       }
       System.out.println("File: " + trainingFile.getAbsolutePath());
+
       out.close();
 
     } catch (FileNotFoundException e2) {
