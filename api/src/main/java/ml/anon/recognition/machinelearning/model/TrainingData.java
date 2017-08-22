@@ -28,7 +28,9 @@ public class TrainingData {
 
   public void appendToTrainingTxt(String line){
     StringBuilder stringBuilder = new StringBuilder(this.trainingTxt);
-    stringBuilder.append("\r\n");
+    if(!this.trainingTxt.equals("")){
+      stringBuilder.append("\r\n");
+    }
     stringBuilder.append(line);
     this.trainingTxt = stringBuilder.toString();
   }

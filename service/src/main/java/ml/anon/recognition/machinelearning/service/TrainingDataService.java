@@ -51,7 +51,7 @@ public class TrainingDataService implements ITrainingDataService {
       trainingData = trainingDataList.get(0);
     }else{
 
-      System.out.print("Error: more then one trainingData file found!");
+      System.err.print("Error: more then one trainingData file found!");
     }
 
     List<String> annotations = new ArrayList<String>();
@@ -71,7 +71,6 @@ public class TrainingDataService implements ITrainingDataService {
 
 
     for (AnonPlusTokens anons : anonsWithTokens) {
-      System.out.println("Anons: "+ anons.getAnonymization().getData().getOriginal());
 
       indexesOfToken = this.getOccurrencesOfOriginal(document, anons.getTokens());
 
@@ -90,7 +89,6 @@ public class TrainingDataService implements ITrainingDataService {
     trainingData.addTokens(document.getChunks());
     trainingData.addAnnotations(annotations);
     this.appendToExisting(trainingData);
-       // TrainingData.builder().annotations(annotations).tokens(document.getChunks()).build());
     trainingDataRepository.save(trainingData);
 
     System.out.println("############################################");
@@ -138,8 +136,6 @@ public class TrainingDataService implements ITrainingDataService {
     List<Integer> indexesOfToken = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
     List<Integer> occurrencesOfSequence = new ArrayList<Integer>(indexesOfToken);
 
-    System.out.println("Size: " + occurrencesOfSequence.size());
-
     // -1 because of the blank line token
     for (int i = 1; i < tokensOfOriginal.size()-1; ++i) {
       List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), document.getChunks());
@@ -165,7 +161,6 @@ public class TrainingDataService implements ITrainingDataService {
         trainingData.appendToTrainingTxt(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
       }
     }
-    System.out.println("File: " + trainingFile.getAbsolutePath());
     return true;
   }
 
@@ -181,7 +176,6 @@ public class TrainingDataService implements ITrainingDataService {
 
   private ArrayList<String> tokenize(String original) {
 
-   // System.out.println("original: " + original);
     HttpHeaders headers = new HttpHeaders();
     headers.set(HttpHeaders.CONTENT_TYPE, "multipart/form-data");
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();

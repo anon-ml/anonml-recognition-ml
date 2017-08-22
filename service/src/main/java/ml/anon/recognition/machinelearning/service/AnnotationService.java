@@ -22,10 +22,14 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import javax.annotation.Resource;
+
+import edu.stanford.nlp.io.EncodingPrintWriter;
 import lombok.extern.slf4j.Slf4j;
 import ml.anon.anonymization.model.Replacement;
 import ml.anon.documentmanagement.resource.DocumentResource;
 import ml.anon.io.ResourceUtil;
+import ml.anon.recognition.machinelearning.model.TrainingData;
+import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
 import org.apache.commons.io.IOUtils;
 import org.apache.uima.UIMAException;
 import org.cleartk.ml.CleartkSequenceAnnotator;
@@ -34,6 +38,7 @@ import org.cleartk.ml.jar.DefaultSequenceDataWriterFactory;
 import org.cleartk.ml.jar.DirectoryDataWriterFactory;
 import org.cleartk.ml.jar.GenericJarClassifierFactory;
 import org.cleartk.util.cr.FilesCollectionReader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import de.tu.darmstadt.lt.ner.annotator.NERAnnotator;
@@ -53,6 +58,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Service
 @Slf4j
 public class AnnotationService implements IAnnotationService {
+
+  @Autowired
+  private TrainingDataRepository trainingDataRepository;
 
   private final static String basePath = "." + File.separator + "src" + File.separator + "main"
           + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
@@ -382,6 +390,8 @@ public class AnnotationService implements IAnnotationService {
 
     System.out.println("Now retrain!");
 
+    if (!this.outputTrainingData()) return false;
+
     Configuration.trainFileName = new File(pathToTrainingFile).getAbsolutePath();
     initNERModel();
 
@@ -414,6 +424,24 @@ public class AnnotationService implements IAnnotationService {
 
     return true;
 
+  }
+
+  private boolean outputTrainingData() {
+    TrainingData trainingData = trainingDataRepository.findAll().get(0);
+    PrintWriter out;
+    try {
+      File trainingFile = new File(AnnotationService.pathToTrainingFile);
+      System.out.println("File: " + trainingFile.getAbsolutePath());
+
+      out = new PrintWriter(new FileOutputStream(trainingFile, false));
+      out.print(trainingData.getTrainingTxt());
+      out.close();
+    }
+    catch (FileNotFoundException e2) {
+      e2.printStackTrace();
+      return false;
+    }
+    return true;
   }
 
 }

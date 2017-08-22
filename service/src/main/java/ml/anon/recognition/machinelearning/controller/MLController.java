@@ -47,8 +47,8 @@ public class MLController {
   }
 
 
-  @RequestMapping(value = "/ml/retrain/{id}", method = RequestMethod.GET)
-  public boolean retrain(@PathVariable String id) {
+  @RequestMapping(value = "/ml/retrain/", method = RequestMethod.GET)
+  public boolean retrain() {
 
     return annotationService.retrain();
 
