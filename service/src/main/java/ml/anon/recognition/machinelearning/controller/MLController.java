@@ -25,7 +25,8 @@ public class MLController {
 
   @Resource
   private IAnnotationService annotationService;
-  private DocumentResource documentResource = new DocumentResource(new RestTemplate());
+  @Resource
+  private DocumentResource documentResource;
 
   @Resource
   private ITrainingDataService trainingDataAccess;

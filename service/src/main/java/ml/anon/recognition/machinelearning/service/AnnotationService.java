@@ -62,8 +62,11 @@ public class AnnotationService implements IAnnotationService {
   @Autowired
   private TrainingDataRepository trainingDataRepository;
 
+  @Resource
+  private ReplacementResource replacementResource;
+
   private final static String basePath = "." + File.separator + "src" + File.separator + "main"
-          + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
+      + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
 
   //private final static String basePath = AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
 
@@ -310,7 +313,6 @@ public class AnnotationService implements IAnnotationService {
   private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream, Document document)
       throws IOException {
     ArrayList<Anonymization> anonymizations;
-    ReplacementResource replacementGenerator = new ReplacementResource();
 
     Reader inputStreamReader = new InputStreamReader(inputStream);
     BufferedReader in = new BufferedReader(inputStreamReader);
@@ -341,7 +343,7 @@ public class AnnotationService implements IAnnotationService {
           original = this.findOriginal(original.trim(), document);
           temp = counter;
 
-          anonymization.data(replacementGenerator
+          anonymization.data(replacementResource
               .create(Replacement.builder().original(original).label(label).build()));
 
           anonymizations.add(anonymization.build());
@@ -361,7 +363,7 @@ public class AnnotationService implements IAnnotationService {
     }
 
     original = this.findOriginal(original.trim(), document);
-    anonymization.data(replacementGenerator
+    anonymization.data(replacementResource
         .create(Replacement.builder().original(original).label(label).build()));
 
     anonymizations.add(anonymization.build());
@@ -370,7 +372,7 @@ public class AnnotationService implements IAnnotationService {
     return anonymizations;
   }
 
-  private String findOriginal(String originalToFind, Document document){
+  private String findOriginal(String originalToFind, Document document) {
 
     String content = document.getFullText();
 
@@ -390,7 +392,9 @@ public class AnnotationService implements IAnnotationService {
 
     System.out.println("Now retrain!");
 
-    if (!this.outputTrainingData()) return false;
+    if (!this.outputTrainingData()) {
+      return false;
+    }
 
     Configuration.trainFileName = new File(pathToTrainingFile).getAbsolutePath();
     initNERModel();
@@ -436,8 +440,7 @@ public class AnnotationService implements IAnnotationService {
       out = new PrintWriter(new FileOutputStream(trainingFile, false));
       out.print(trainingData.getTrainingTxt());
       out.close();
-    }
-    catch (FileNotFoundException e2) {
+    } catch (FileNotFoundException e2) {
       e2.printStackTrace();
       return false;
     }

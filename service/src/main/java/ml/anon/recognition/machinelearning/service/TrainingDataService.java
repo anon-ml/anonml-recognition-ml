@@ -1,17 +1,15 @@
 package ml.anon.recognition.machinelearning.service;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Resource;
 import ml.anon.recognition.machinelearning.model.AnonPlusTokens;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -28,6 +26,7 @@ import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
 
 /**
  * Service to set up the new trainings file to later on retrain the model and improve the results.
+ *
  * @author Matthias
  */
 @Service
@@ -35,21 +34,27 @@ public class TrainingDataService implements ITrainingDataService {
 
   private RestTemplate restTemplate = new RestTemplate();
 
+  @Value("${documentmanagement.service.url}")
+  private String documentManagementUrl;
+
+  @Resource
+  private DocumentResource documentResource;
+
   @Autowired
   private TrainingDataRepository trainingDataRepository;
 
   public boolean updateTrainingData(String id) {
 
-    DocumentResource access = new DocumentResource(new RestTemplate());
-    Document document = access.findById(id);
+    Document document = documentResource.findById(id);
 
     List<TrainingData> trainingDataList = trainingDataRepository.findAll();
     TrainingData trainingData = null;
-    if(trainingDataList.size() == 0){
-      trainingData = TrainingData.builder().tokens(new ArrayList<String>()).annotations(new ArrayList<String>()).trainingTxt("").build();
-    }else if(trainingDataList.size() == 1) {
+    if (trainingDataList.size() == 0) {
+      trainingData = TrainingData.builder().tokens(new ArrayList<String>())
+          .annotations(new ArrayList<String>()).trainingTxt("").build();
+    } else if (trainingDataList.size() == 1) {
       trainingData = trainingDataList.get(0);
-    }else{
+    } else {
 
       System.err.print("Error: more then one trainingData file found!");
     }
@@ -61,14 +66,12 @@ public class TrainingDataService implements ITrainingDataService {
     for (int i = 0; i < document.getChunks().size(); ++i) {
       if (!indexesOfToken.contains(new Integer(i))) {
         annotations.add("O");
-      }
-      else{
+      } else {
         annotations.add(""); // for the spaces between sentences
       }
     }
 
     List<AnonPlusTokens> anonsWithTokens = this.getAnonPlusTokens(document);
-
 
     for (AnonPlusTokens anons : anonsWithTokens) {
 
@@ -109,7 +112,8 @@ public class TrainingDataService implements ITrainingDataService {
 
         List<String> tokensOfOriginal = this.tokenize(anonymization.getData().getOriginal());
 
-        anonsWithTokens.add(AnonPlusTokens.builder().anonymization(anonymization).tokens(tokensOfOriginal).build());
+        anonsWithTokens.add(
+            AnonPlusTokens.builder().anonymization(anonymization).tokens(tokensOfOriginal).build());
 
       }
     }
@@ -117,13 +121,11 @@ public class TrainingDataService implements ITrainingDataService {
     Collections.sort(anonsWithTokens, new Comparator<AnonPlusTokens>() {
       @Override
       public int compare(AnonPlusTokens o1, AnonPlusTokens o2) {
-        if(o1.getTokens().size() == o2.getTokens().size()){
+        if (o1.getTokens().size() == o2.getTokens().size()) {
           return 0;
-        }
-        else if(o1.getTokens().size() > o2.getTokens().size()){
+        } else if (o1.getTokens().size() > o2.getTokens().size()) {
           return 1;
-        }
-        else{
+        } else {
           return -1;
         }
       }
@@ -137,7 +139,7 @@ public class TrainingDataService implements ITrainingDataService {
     List<Integer> occurrencesOfSequence = new ArrayList<Integer>(indexesOfToken);
 
     // -1 because of the blank line token
-    for (int i = 1; i < tokensOfOriginal.size()-1; ++i) {
+    for (int i = 1; i < tokensOfOriginal.size() - 1; ++i) {
       List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), document.getChunks());
 
       for (Integer integer : indexesOfToken) {
@@ -154,11 +156,12 @@ public class TrainingDataService implements ITrainingDataService {
     // output the actual trainings file
 
     for (int i = 0; i < trainingData.getAnnotations().size(); ++i) {
-      if(trainingData.getTokens().get(i).equals("")){
+      if (trainingData.getTokens().get(i).equals("")) {
         trainingData.appendToTrainingTxt("");
 
       } else {
-        trainingData.appendToTrainingTxt(trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
+        trainingData.appendToTrainingTxt(
+            trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
       }
     }
     return true;
@@ -183,7 +186,7 @@ public class TrainingDataService implements ITrainingDataService {
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(
         map, headers);
     return restTemplate
-        .postForObject(URI.create("http://127.0.0.1:9001/document/tokenize/text"), request,
+        .postForObject(URI.create(documentManagementUrl + "/document/tokenize/text"), request,
             ArrayList.class);
   }
 
