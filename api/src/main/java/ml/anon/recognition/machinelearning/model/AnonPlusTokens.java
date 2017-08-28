@@ -10,7 +10,6 @@ import java.util.List;
 @Builder
 public class AnonPlusTokens {
 
-
     private Anonymization anonymization;
     private List<String> tokens;
 

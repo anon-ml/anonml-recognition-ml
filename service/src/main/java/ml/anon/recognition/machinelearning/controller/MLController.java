@@ -5,10 +5,7 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import ml.anon.anonymization.model.Anonymization;
@@ -25,6 +22,7 @@ public class MLController {
 
   @Resource
   private IAnnotationService annotationService;
+
   @Resource
   private DocumentResource documentResource;
 
@@ -47,6 +45,19 @@ public class MLController {
 
   }
 
+  @RequestMapping(value = "/ml/training/data/import/", method = RequestMethod.POST)
+  public boolean importTrainingData(@RequestParam String importedTrainingData) {
+
+    return trainingDataAccess.appendToTrainingTxt(importedTrainingData);
+
+  }
+
+  @RequestMapping(value = "/ml/get/training/data/", method = RequestMethod.GET)
+  public String getTrainingDataAsString() {
+
+    return trainingDataAccess.getTrainingData().getTrainingTxt();
+
+  }
 
   @RequestMapping(value = "/ml/retrain/", method = RequestMethod.GET)
   public boolean retrain() {
@@ -54,6 +65,8 @@ public class MLController {
     return annotationService.retrain();
 
   }
+
+
 
 
 }

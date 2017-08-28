@@ -431,7 +431,7 @@ public class AnnotationService implements IAnnotationService {
   }
 
   private boolean outputTrainingData() {
-    TrainingData trainingData = trainingDataRepository.findAll().get(0);
+    TrainingData trainingData = trainingDataRepository.findAll().get(0);  //TODO: take function from trainingDataService
     PrintWriter out;
     try {
       File trainingFile = new File(AnnotationService.pathToTrainingFile);

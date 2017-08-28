@@ -43,24 +43,11 @@ public class TrainingDataService implements ITrainingDataService {
   @Autowired
   private TrainingDataRepository trainingDataRepository;
 
-  public boolean updateTrainingData(String id) {
+  public boolean updateTrainingData(String documentId) {
 
-    Document document = documentResource.findById(id);
-
-    List<TrainingData> trainingDataList = trainingDataRepository.findAll();
-    TrainingData trainingData = null;
-    if (trainingDataList.size() == 0) {
-      trainingData = TrainingData.builder().tokens(new ArrayList<String>())
-          .annotations(new ArrayList<String>()).trainingTxt("").build();
-    } else if (trainingDataList.size() == 1) {
-      trainingData = trainingDataList.get(0);
-    } else {
-
-      System.err.print("Error: more then one trainingData file found!");
-    }
+    Document document = documentResource.findById(documentId);
 
     List<String> annotations = new ArrayList<String>();
-
     List<Integer> indexesOfToken = this.indexOfAll("", document.getChunks());
 
     for (int i = 0; i < document.getChunks().size(); ++i) {
@@ -71,7 +58,7 @@ public class TrainingDataService implements ITrainingDataService {
       }
     }
 
-    List<AnonPlusTokens> anonsWithTokens = this.getAnonPlusTokens(document);
+    List<AnonPlusTokens> anonsWithTokens = this.getAnonPlusTokens(document.getAnonymizations());
 
     for (AnonPlusTokens anons : anonsWithTokens) {
 
@@ -89,21 +76,25 @@ public class TrainingDataService implements ITrainingDataService {
       }
     }
 
-    trainingData.addTokens(document.getChunks());
-    trainingData.addAnnotations(annotations);
-    this.appendToExisting(trainingData);
-    trainingDataRepository.save(trainingData);
+    this.appendToExisting(document.getChunks(), annotations);
 
-    System.out.println("############################################");
-    System.out.println(trainingDataRepository.findAll().get(0).getTrainingTxt());
-    System.out.println("############################################");
     return true;
   }
 
-  private List<AnonPlusTokens> getAnonPlusTokens(Document document) {
+  private List<Integer> indexOfAll(String token, List<String> tokens) {
+    ArrayList<Integer> indexList = new ArrayList<Integer>();
+    for (int i = 0; i < tokens.size(); i++) {
+      if (token.equals(tokens.get(i))) {
+        indexList.add(i);
+      }
+    }
+    return indexList;
+  }
+
+  private List<AnonPlusTokens> getAnonPlusTokens(List<Anonymization> anonymizations) {
     List<AnonPlusTokens> anonsWithTokens = new ArrayList<AnonPlusTokens>();
 
-    for (Anonymization anonymization : document.getAnonymizations()) {
+    for (Anonymization anonymization : anonymizations) {
 
       if (anonymization.getData().getLabel().equals(Label.PERSON)
           || anonymization.getData().getLabel().equals(Label.MISC)
@@ -152,29 +143,60 @@ public class TrainingDataService implements ITrainingDataService {
   }
 
 
-  private boolean appendToExisting(TrainingData trainingData) {
+  private boolean appendToExisting(List<String> tokens, List<String> annotations) {
     // output the actual trainings file
 
-    for (int i = 0; i < trainingData.getAnnotations().size(); ++i) {
-      if (trainingData.getTokens().get(i).equals("")) {
-        trainingData.appendToTrainingTxt("");
+    StringBuilder stringBuilder = new StringBuilder();
 
+    for (int i = 0; i < annotations.size(); ++i) {
+      if (tokens.get(i).equals("")) {
+        stringBuilder.append("");
       } else {
-        trainingData.appendToTrainingTxt(
-            trainingData.getTokens().get(i) + "  " + trainingData.getAnnotations().get(i));
+        stringBuilder.append(tokens.get(i) + "  " + annotations.get(i));
+      }
+      if(i < annotations.size()-1){
+        stringBuilder.append("\r\n");
       }
     }
+
+    this.appendToTrainingTxt(stringBuilder.toString());
+
     return true;
   }
 
-  private List<Integer> indexOfAll(String token, List<String> tokens) {
-    ArrayList<Integer> indexList = new ArrayList<Integer>();
-    for (int i = 0; i < tokens.size(); i++) {
-      if (token.equals(tokens.get(i))) {
-        indexList.add(i);
-      }
+  @Override
+  public TrainingData getTrainingData() {
+    List<TrainingData> trainingDataList = trainingDataRepository.findAll();
+
+    TrainingData trainingData = null;
+    if (trainingDataList.size() == 0) {
+      trainingData = TrainingData.builder().trainingTxt("").build();
+    } else if (trainingDataList.size() == 1) {
+      trainingData = trainingDataList.get(0);
+    } else {
+
+      System.err.print("Error: more then one trainingData file found!");
     }
-    return indexList;
+    return trainingData;
+  }
+
+  @Override
+  public boolean appendToTrainingTxt(String trainingDataToAdd) {
+
+    TrainingData trainingData = this.getTrainingData();
+
+    String trainingTxt = trainingData.getTrainingTxt();
+
+    StringBuilder stringBuilder = new StringBuilder(trainingTxt);
+    if(!trainingTxt.equals("")){
+      stringBuilder.append("\r\n");
+    }
+    stringBuilder.append(trainingDataToAdd);
+    trainingData.setTrainingTxt(stringBuilder.toString());
+
+    trainingDataRepository.save(trainingData);
+
+    return true;
   }
 
   private ArrayList<String> tokenize(String original) {
@@ -189,5 +211,7 @@ public class TrainingDataService implements ITrainingDataService {
         .postForObject(URI.create(documentManagementUrl + "/document/tokenize/text"), request,
             ArrayList.class);
   }
+
+
 
 }

@@ -12,27 +12,6 @@ import lombok.Data;
 public class TrainingData {
 
   private String id;
-  private List<String> tokens;
-  private List<String> annotations;
   private String trainingTxt;
-
-  public boolean addTokens(List<String> tokens) {
-
-    return this.tokens.addAll(tokens);
-  }
-
-  public boolean addAnnotations(List<String> annotations) {
-
-    return this.annotations.addAll(annotations);
-  }
-
-  public void appendToTrainingTxt(String line){
-    StringBuilder stringBuilder = new StringBuilder(this.trainingTxt);
-    if(!this.trainingTxt.equals("")){
-      stringBuilder.append("\r\n");
-    }
-    stringBuilder.append(line);
-    this.trainingTxt = stringBuilder.toString();
-  }
 
 }
