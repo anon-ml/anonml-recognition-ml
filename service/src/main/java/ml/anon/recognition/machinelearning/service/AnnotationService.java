@@ -310,16 +310,13 @@ public class AnnotationService implements IAnnotationService {
     return anonymizations;
   }
 
+  
   private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream, Document document)
       throws IOException {
-    ArrayList<Anonymization> anonymizations;
+    ArrayList<Anonymization> anonymizations = new ArrayList<Anonymization>();
 
     Reader inputStreamReader = new InputStreamReader(inputStream);
     BufferedReader in = new BufferedReader(inputStreamReader);
-
-    anonymizations = new ArrayList<Anonymization>();
-
-    // id, original, data, label, producer
 
     AnonymizationBuilder anonymization = Anonymization.builder().producer(Producer.ML);
 
@@ -340,7 +337,7 @@ public class AnnotationService implements IAnnotationService {
       if (splitted[1].startsWith("B-")) {
         counter++;
         if (temp == (counter - 1)) {
-          original = this.findOriginal(original.trim(), document);
+          original = this.findOriginal(original.trim(), document.getFullText());
           temp = counter;
 
           anonymization.data(replacementResource
@@ -352,9 +349,8 @@ public class AnnotationService implements IAnnotationService {
         }
         String substring = splitted[1].substring(2);
         label = Label.getOrDefault(substring, Label.UNKNOWN); // Label - must exactly match!
-
         original += splitted[0]; // 1. Teil des Tags
-        log.debug(line);
+
       } else if (splitted[1].startsWith("I-")) {
         original += "\\s*" + splitted[0]; // 2. - n. Teil des tags
       } else {
@@ -362,7 +358,8 @@ public class AnnotationService implements IAnnotationService {
       }
     }
 
-    original = this.findOriginal(original.trim(), document);
+    original = this.findOriginal(original.trim(), document.getFullText());
+
     anonymization.data(replacementResource
         .create(Replacement.builder().original(original).label(label).build()));
 
@@ -372,9 +369,17 @@ public class AnnotationService implements IAnnotationService {
     return anonymizations;
   }
 
-  private String findOriginal(String originalToFind, Document document) {
+  /**
+   * Searches with pattern search for the right original to set the right one, even if the original goes over a line break
+   *
+   * @param originalToFind original set up of annotated tokens with a \s* symbol between to find all originals even if
+   *                       a linebreak separates the tokens
+   * @param fullText the raw text of the uploaded document
+   * @return the first found match of the pattern search
+   */
+  private String findOriginal(String originalToFind, String fullText) {
 
-    String content = document.getFullText();
+    String content = fullText;
 
     Pattern pattern = Pattern.compile(originalToFind);
     Matcher matcher = pattern.matcher(content);
@@ -387,7 +392,13 @@ public class AnnotationService implements IAnnotationService {
 
   }
 
-
+  /**
+   * Calls outputTrainingData to have a training file to work with. Afterwards initializes the GermaNER component and
+   * retrains the model
+   *
+   * @return true if everything worked
+   */
+  @Override
   public boolean retrain() {
 
     System.out.println("Now retrain!");
@@ -430,11 +441,17 @@ public class AnnotationService implements IAnnotationService {
 
   }
 
+  /**
+   * Loads the training data from the database and outputs it to a File on the pathToTrainingFile position,
+   * so the retrain function can work with it.
+   *
+   * @return true if everything worked
+   */
   private boolean outputTrainingData() {
     TrainingData trainingData = trainingDataRepository.findAll().get(0);  //TODO: take function from trainingDataService
     PrintWriter out;
     try {
-      File trainingFile = new File(AnnotationService.pathToTrainingFile);
+      File trainingFile = new File(this.pathToTrainingFile);
       System.out.println("File: " + trainingFile.getAbsolutePath());
 
       out = new PrintWriter(new FileOutputStream(trainingFile, false));

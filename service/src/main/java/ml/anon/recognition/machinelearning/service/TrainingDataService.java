@@ -62,15 +62,15 @@ public class TrainingDataService implements ITrainingDataService {
 
     for (AnonPlusTokens anons : anonsWithTokens) {
 
-      indexesOfToken = this.getOccurrencesOfOriginal(document, anons.getTokens());
+      indexesOfToken = this.getOccurrencesOfOriginal(document.getChunks(), anons.getTokens());
 
-      for (Integer occurence : indexesOfToken) {
+      for (Integer occurrence : indexesOfToken) {
         // -1 because of the empty token produced by the tokenizer
         for (int i = 0; i < anons.getTokens().size() - 1; ++i) {
           if (i == 0) {
-            annotations.set(occurence + i, "B-" + anons.getAnonymization().getData().getLabel());
+            annotations.set(occurrence + i, "B-" + anons.getAnonymization().getData().getLabel());
           } else {
-            annotations.set(occurence + i, "I-" + anons.getAnonymization().getData().getLabel());
+            annotations.set(occurrence + i, "I-" + anons.getAnonymization().getData().getLabel());
           }
         }
       }
@@ -81,6 +81,13 @@ public class TrainingDataService implements ITrainingDataService {
     return true;
   }
 
+  /**
+   * Searches all occurrences of the given token in the given list of tokens and saves those in a list of indexes.
+   *
+   * @param token which occurrences should be found
+   * @param tokens list of tokens from the document which should be used to update the training data
+   * @return list of indexes where the given token occurres in the given token list
+   */
   private List<Integer> indexOfAll(String token, List<String> tokens) {
     ArrayList<Integer> indexList = new ArrayList<Integer>();
     for (int i = 0; i < tokens.size(); i++) {
@@ -91,6 +98,17 @@ public class TrainingDataService implements ITrainingDataService {
     return indexList;
   }
 
+  /**
+   * Iterates over the given list of anonymizations of the actual document to tokenize the originals of all
+   * anonymization with labels which are set by the ml module (misc, person, location and organization). The tokens
+   * and the original anonymization are set in the {@link AnonPlusTokens} object to use the corresponding label.
+   * After tokenizing the list of {@link AnonPlusTokens} is sorted by number of tokens of the original to start with
+   * the shortest (to not have encapsulated annotations)
+   *
+   * @param anonymizations list of anonymizations of the actual document. Produces by Ml, Regex and Human interaction
+   * @return a sorted list of {@link AnonPlusTokens} objects which hold the tokenized original and the anonymization
+   * itself
+   */
   private List<AnonPlusTokens> getAnonPlusTokens(List<Anonymization> anonymizations) {
     List<AnonPlusTokens> anonsWithTokens = new ArrayList<AnonPlusTokens>();
 
@@ -124,14 +142,22 @@ public class TrainingDataService implements ITrainingDataService {
     return anonsWithTokens;
   }
 
-  private List<Integer> getOccurrencesOfOriginal(Document document, List<String> tokensOfOriginal) {
+    /**
+     * Searches for occurrences of all tokens of an original in a row to get the whole sequence occurrence. The index
+     * of the start positions of the sequence are saved in a list and returned to set the annotations.
+     *
+     * @param tokens list of all tokens of the acutal document
+     * @param tokensOfOriginal list of the tokens of the original of the anonymizaion which is looked at
+     * @return a list of the sequence start positions
+     */
+  private List<Integer> getOccurrencesOfOriginal(List<String> tokens, List<String> tokensOfOriginal) {
 
-    List<Integer> indexesOfToken = this.indexOfAll(tokensOfOriginal.get(0), document.getChunks());
+    List<Integer> indexesOfToken = this.indexOfAll(tokensOfOriginal.get(0), tokens);
     List<Integer> occurrencesOfSequence = new ArrayList<Integer>(indexesOfToken);
 
     // -1 because of the blank line token
     for (int i = 1; i < tokensOfOriginal.size() - 1; ++i) {
-      List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), document.getChunks());
+      List<Integer> indexes = this.indexOfAll(tokensOfOriginal.get(i), tokens);
 
       for (Integer integer : indexesOfToken) {
         if (!indexes.contains(integer + i)) {
@@ -142,9 +168,14 @@ public class TrainingDataService implements ITrainingDataService {
     return occurrencesOfSequence;
   }
 
-
+    /**
+     * Builds the training String from the tokens of the document and the before set annotations.
+     *
+     * @param tokens list of all tokens of the actual document
+     * @param annotations list of annotations corresponding to the tokens (e.g.: B-Person, I-Person, ...)
+     * @return true if everything worked
+     */
   private boolean appendToExisting(List<String> tokens, List<String> annotations) {
-    // output the actual trainings file
 
     StringBuilder stringBuilder = new StringBuilder();
 
@@ -159,9 +190,29 @@ public class TrainingDataService implements ITrainingDataService {
       }
     }
 
-    this.appendToTrainingTxt(stringBuilder.toString());
+    if(!this.appendToTrainingTxt(stringBuilder.toString())){
+        return false;
+    }
 
     return true;
+  }
+
+  @Override
+  public boolean appendToTrainingTxt(String trainingDataToAdd) {
+      TrainingData trainingData = this.getTrainingData();
+
+      String trainingTxt = trainingData.getTrainingTxt();
+
+      StringBuilder stringBuilder = new StringBuilder(trainingTxt);
+      if(!trainingTxt.equals("")){
+          stringBuilder.append("\r\n");
+      }
+      stringBuilder.append(trainingDataToAdd);
+      trainingData.setTrainingTxt(stringBuilder.toString());
+
+      trainingDataRepository.save(trainingData);
+
+      return true;
   }
 
   @Override
@@ -180,25 +231,12 @@ public class TrainingDataService implements ITrainingDataService {
     return trainingData;
   }
 
-  @Override
-  public boolean appendToTrainingTxt(String trainingDataToAdd) {
 
-    TrainingData trainingData = this.getTrainingData();
-
-    String trainingTxt = trainingData.getTrainingTxt();
-
-    StringBuilder stringBuilder = new StringBuilder(trainingTxt);
-    if(!trainingTxt.equals("")){
-      stringBuilder.append("\r\n");
-    }
-    stringBuilder.append(trainingDataToAdd);
-    trainingData.setTrainingTxt(stringBuilder.toString());
-
-    trainingDataRepository.save(trainingData);
-
-    return true;
-  }
-
+    /**
+     * Tokenizes the given String with the help of the functionality of the documentmanagement module
+     * @param original String to tokenize
+     * @return a list of tokens of the given original
+     */
   private ArrayList<String> tokenize(String original) {
 
     HttpHeaders headers = new HttpHeaders();
