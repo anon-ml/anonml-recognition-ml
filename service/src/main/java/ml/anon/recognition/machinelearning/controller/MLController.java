@@ -75,7 +75,7 @@ public class MLController {
   }
 
   @RequestMapping(value = "/ml/post/training/data/", method = RequestMethod.POST)
-  public boolean postTrainingData(@RequestParam String importedTrainingData) {
+  public boolean postTrainingData(@RequestBody String importedTrainingData) {
 
     return trainingDataAccess.appendToTrainingTxt(importedTrainingData);
 
