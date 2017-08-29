@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import ml.anon.recognition.machinelearning.service.IScoreService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -31,6 +32,9 @@ public class MLController {
   @Resource
   private ITrainingDataService trainingDataAccess;
 
+  @Resource
+  private IScoreService scoreService;
+
 
   @RequestMapping(value = "/ml/annotate/{id}", method = RequestMethod.POST)
   public List<Anonymization> annotate(@PathVariable String id) {
@@ -44,6 +48,13 @@ public class MLController {
   public boolean updateTrainingData(@PathVariable String id) {
 
     return trainingDataAccess.updateTrainingData(id);
+
+  }
+
+  @RequestMapping(value = "/ml/calculate/f/one/{id}", method = RequestMethod.POST)
+  public boolean postCalculateFOne(@RequestBody List<Anonymization> correctAnonymizations, @PathVariable String id) {
+
+    return scoreService.calculateFOneScore(id, correctAnonymizations);
 
   }
 
