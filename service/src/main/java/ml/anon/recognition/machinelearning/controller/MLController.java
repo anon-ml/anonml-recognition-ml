@@ -1,10 +1,20 @@
 package ml.anon.recognition.machinelearning.controller;
 
+import java.text.MessageFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import java.util.Objects;
 import javax.annotation.Resource;
 
+import lombok.extern.java.Log;
+import ml.anon.exception.BadRequestException;
 import ml.anon.recognition.machinelearning.service.IScoreService;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -17,8 +27,10 @@ import ml.anon.recognition.machinelearning.service.ITrainingDataService;
 
 /**
  * Handles the http request to the ML module.
+ *
  * @author Matthias
  */
+@Log
 @RestController
 public class MLController {
 
@@ -34,6 +46,9 @@ public class MLController {
 
   @Resource
   private IScoreService scoreService;
+
+  private boolean retrains = false;
+  private LocalDateTime retrainStarted;
 
 
   @RequestMapping(value = "/ml/annotate/{id}", method = RequestMethod.POST)
@@ -52,7 +67,8 @@ public class MLController {
   }
 
   @RequestMapping(value = "/ml/calculate/f/one/{id}", method = RequestMethod.POST)
-  public boolean postCalculateFOne(@RequestBody List<Anonymization> correctAnonymizations, @PathVariable String id) {
+  public boolean postCalculateFOne(@RequestBody List<Anonymization> correctAnonymizations,
+      @PathVariable String id) {
 
     return scoreService.calculateFOneScore(id, correctAnonymizations);
 
@@ -75,11 +91,23 @@ public class MLController {
   @RequestMapping(value = "/ml/retrain/", method = RequestMethod.GET)
   public boolean retrain() {
 
-    return annotationService.retrain();
-
+    if (retrains) {
+      throw new BadRequestException("Already retraining");
+    } else {
+      log.info("Started retrain");
+      retrains = true;
+      retrainStarted = LocalDateTime.now();
+      boolean retrain = annotationService.retrain();
+      retrains = false;
+      log.info("Finished retrain, result: " + retrain);
+      return retrain;
+    }
   }
 
-
+  @RequestMapping(value = "/ml/retrain/status", method = RequestMethod.GET)
+  String getStatus() {
+    return retrains ? retrainStarted.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "";
+  }
 
 
 }
