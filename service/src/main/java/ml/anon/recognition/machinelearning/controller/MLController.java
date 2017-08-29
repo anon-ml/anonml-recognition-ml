@@ -15,6 +15,7 @@ import ml.anon.recognition.machinelearning.service.IAnnotationService;
 import ml.anon.recognition.machinelearning.service.ITrainingDataService;
 
 /**
+ * Handles the http request to the ML module.
  * @author Matthias
  */
 @RestController
@@ -22,6 +23,7 @@ public class MLController {
 
   @Resource
   private IAnnotationService annotationService;
+
 
   @Resource
   private DocumentResource documentResource;
@@ -45,8 +47,8 @@ public class MLController {
 
   }
 
-  @RequestMapping(value = "/ml/training/data/import/", method = RequestMethod.POST)
-  public boolean importTrainingData(@RequestParam String importedTrainingData) {
+  @RequestMapping(value = "/ml/post/training/data/", method = RequestMethod.POST)
+  public boolean postTrainingData(@RequestParam String importedTrainingData) {
 
     return trainingDataAccess.appendToTrainingTxt(importedTrainingData);
 

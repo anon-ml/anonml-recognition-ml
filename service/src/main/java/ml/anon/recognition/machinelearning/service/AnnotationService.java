@@ -62,6 +62,7 @@ public class AnnotationService implements IAnnotationService {
   @Autowired
   private TrainingDataRepository trainingDataRepository;
 
+
   @Resource
   private ReplacementResource replacementResource;
 
@@ -200,13 +201,12 @@ public class AnnotationService implements IAnnotationService {
             EvaluatedNERWriter.SENTENCES_ID, aSentencesIds));
   }
 
+  /**
+   * Runs the GermaNER one time with just a dummy input to preload everything at server startup.
+   */
   public static void initGermaNER() {
 
-    System.out.println("initGermaNER Accessed");
-    long startTime = System.currentTimeMillis();
-
     c = new ChangeColon();
-
     PrintWriter out;
 
     try {
@@ -222,12 +222,7 @@ public class AnnotationService implements IAnnotationService {
     }
 
     if (prop == null) {
-      // load a properties file
-      long initNerModelB = System.currentTimeMillis();
       initNERModel();
-      long initNerModelA = System.currentTimeMillis();
-      System.out.println("Time to init: " + (initNerModelA - initNerModelB) + "ms");
-
     }
 
     try {
@@ -237,45 +232,23 @@ public class AnnotationService implements IAnnotationService {
       File outputtmpFile = File.createTempFile("result", ".tmp");
       File outputFile = new File(pathToOuputFile);
 
-      long initNerModelB = System.currentTimeMillis();
-
       // one classifyTestFile run to preload the data.zip
       c.normalize(Configuration.testFileName, Configuration.testFileName + ".normalized");
       classifyTestFile(modelDirectory, new File(Configuration.testFileName + ".normalized"),
           outputtmpFile, null, null);
       c.deNormalize(outputtmpFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
-      long initNerModelA = System.currentTimeMillis();
-      System.out
-          .println("Time to preload features: " + (initNerModelA - initNerModelB) / 1000 + "s");
-
-
     } catch (Exception e) {
       System.out.println("error in initGermaNER second try-catch");
       e.printStackTrace();
     }
-
-    long endTime = System.currentTimeMillis();
-    long totalTime = endTime - startTime;
-    System.out.println("Done in " + totalTime / 1000 + " seconds");
 
   }
 
   @Override
   public List<Anonymization> annotate(Document document) {
 
-    // initGermaNER();
-
-    String tokenizedFile = "";
-    for (String token : document.getChunks()) {
-      if (tokenizedFile.length() != 0) {
-        tokenizedFile += "\n";
-      }
-      tokenizedFile += token;
-    }
-
     File outputFile = new File(pathToOuputFile);
-
     System.out.println("Start tagging");
 
     PrintWriter out;
@@ -283,17 +256,17 @@ public class AnnotationService implements IAnnotationService {
     try (InputStream inputStream = new FileInputStream(outputFile.getAbsolutePath())) {
       File outputtmpFile = File.createTempFile("result", ".tmp");
       out = new PrintWriter(pathToTokenizedFile);
-      out.println(tokenizedFile);
+      for(String token : document.getChunks()){
+        out.println(token);
+      }
       out.close();
 
       c.normalize(Configuration.testFileName, Configuration.testFileName + ".normalized");
-
       classifyTestFile(modelDirectory, new File(Configuration.testFileName + ".normalized"),
           outputtmpFile, null, null);
-      // re-normalized the colon changed text
       c.deNormalize(outputtmpFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
-      anonymizations = receiveAnonymizations(inputStream, document);
+      anonymizations = this.receiveAnonymizations(inputStream, document.getFullText());
 
     } catch (UIMAException e) {
       // TODO Auto-generated catch block
@@ -310,8 +283,18 @@ public class AnnotationService implements IAnnotationService {
     return anonymizations;
   }
 
-  
-  private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream, Document document)
+
+  /**
+   * Builds up the original of the anonymizations from the tagged file. A original is the tagged sequence starting with
+   * a B- tag possibly followed by I- tags. Between these parts of the sequence there is used a placeholder for
+   * whitespaces (\s) to find the right original even if it contains a linebreak.
+   *
+   * @param inputStream the input stream of the tagged file
+   * @param fullText the raw full text of the uploaded document (to find the original)
+   * @return a list of {@link Anonymization} objects.
+   * @throws IOException
+   */
+  private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream, String fullText)
       throws IOException {
     ArrayList<Anonymization> anonymizations = new ArrayList<Anonymization>();
 
@@ -337,15 +320,15 @@ public class AnnotationService implements IAnnotationService {
       if (splitted[1].startsWith("B-")) {
         counter++;
         if (temp == (counter - 1)) {
-          original = this.findOriginal(original.trim(), document.getFullText());
+
           temp = counter;
 
+          original = this.findOriginal(original.trim(), fullText);
           anonymization.data(replacementResource
               .create(Replacement.builder().original(original).label(label).build()));
-
           anonymizations.add(anonymization.build());
-          original = "";
 
+          original = "";
         }
         String substring = splitted[1].substring(2);
         label = Label.getOrDefault(substring, Label.UNKNOWN); // Label - must exactly match!
@@ -358,11 +341,9 @@ public class AnnotationService implements IAnnotationService {
       }
     }
 
-    original = this.findOriginal(original.trim(), document.getFullText());
-
+    original = this.findOriginal(original.trim(), fullText);
     anonymization.data(replacementResource
         .create(Replacement.builder().original(original).label(label).build()));
-
     anonymizations.add(anonymization.build());
 
     inputStreamReader.close();
@@ -392,12 +373,6 @@ public class AnnotationService implements IAnnotationService {
 
   }
 
-  /**
-   * Calls outputTrainingData to have a training file to work with. Afterwards initializes the GermaNER component and
-   * retrains the model
-   *
-   * @return true if everything worked
-   */
   @Override
   public boolean retrain() {
 
