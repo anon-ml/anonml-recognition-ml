@@ -1,23 +1,16 @@
 package ml.anon.recognition.machinelearning.controller;
 
-import java.text.MessageFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import java.util.Objects;
 import javax.annotation.Resource;
 
 import lombok.extern.java.Log;
 import ml.anon.exception.BadRequestException;
+import ml.anon.recognition.machinelearning.model.EvaluationData;
 import ml.anon.recognition.machinelearning.service.IScoreService;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.actuate.health.Status;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import ml.anon.anonymization.model.Anonymization;
 import ml.anon.documentmanagement.model.Document;
@@ -41,7 +34,7 @@ public class MLController {
   private DocumentResource documentResource;
 
   @Resource
-  private ITrainingDataService trainingDataAccess;
+  private ITrainingDataService trainingDataService;
 
   @Resource
   private IScoreService scoreService;
@@ -61,7 +54,7 @@ public class MLController {
   @RequestMapping(value = "/ml/update/training/data/{id}", method = RequestMethod.POST)
   public boolean updateTrainingData(@PathVariable String id) {
 
-    return trainingDataAccess.updateTrainingData(id);
+    return trainingDataService.updateTrainingData(id);
 
   }
 
@@ -69,21 +62,28 @@ public class MLController {
   public boolean postCalculateFOne(@RequestBody List<Anonymization> correctAnonymizations,
       @PathVariable String id) {
 
-    return scoreService.calculateFOneScore(id, correctAnonymizations);
+    return scoreService.calculateScores(id, correctAnonymizations);
+
+  }
+
+  @RequestMapping(value = "/ml/get/evaluation/data/", method = RequestMethod.GET)
+  public EvaluationData getEvaluationData() {
+
+    return scoreService.getEvaluationData();
 
   }
 
   @RequestMapping(value = "/ml/post/training/data/", method = RequestMethod.POST)
   public boolean postTrainingData(@RequestBody String importedTrainingData) {
 
-    return trainingDataAccess.appendToTrainingTxt(importedTrainingData);
+    return trainingDataService.appendToTrainingTxt(importedTrainingData);
 
   }
 
   @RequestMapping(value = "/ml/get/training/data/", method = RequestMethod.GET)
   public String getTrainingDataAsString() {
 
-    return trainingDataAccess.getTrainingData().getTrainingTxt();
+    return trainingDataService.getTrainingData().getTrainingTxt();
 
   }
 
