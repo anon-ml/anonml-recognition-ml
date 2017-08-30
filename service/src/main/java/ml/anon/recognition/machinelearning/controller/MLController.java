@@ -37,7 +37,6 @@ public class MLController {
   @Resource
   private IAnnotationService annotationService;
 
-
   @Resource
   private DocumentResource documentResource;
 

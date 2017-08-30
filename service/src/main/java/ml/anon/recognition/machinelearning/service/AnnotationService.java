@@ -1,32 +1,19 @@
 package ml.anon.recognition.machinelearning.service;
 
-import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngine;
-import static org.apache.uima.fit.pipeline.SimplePipeline.runPipeline;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.time.Clock;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-
-import javax.annotation.Resource;
-
-import edu.stanford.nlp.io.EncodingPrintWriter;
+import de.tu.darmstadt.lt.ner.annotator.NERAnnotator;
+import de.tu.darmstadt.lt.ner.preprocessing.ChangeColon;
+import de.tu.darmstadt.lt.ner.preprocessing.Configuration;
+import de.tu.darmstadt.lt.ner.preprocessing.GermaNERMain;
+import de.tu.darmstadt.lt.ner.reader.NERReader;
+import de.tu.darmstadt.lt.ner.writer.EvaluatedNERWriter;
 import lombok.extern.slf4j.Slf4j;
+import ml.anon.anonymization.model.Anonymization;
+import ml.anon.anonymization.model.Anonymization.AnonymizationBuilder;
+import ml.anon.anonymization.model.Label;
+import ml.anon.anonymization.model.Producer;
 import ml.anon.anonymization.model.Replacement;
-import ml.anon.documentmanagement.resource.DocumentResource;
+import ml.anon.documentmanagement.model.Document;
+import ml.anon.documentmanagement.resource.ReplacementResource;
 import ml.anon.io.ResourceUtil;
 import ml.anon.recognition.machinelearning.model.TrainingData;
 import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
@@ -41,19 +28,16 @@ import org.cleartk.util.cr.FilesCollectionReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.tu.darmstadt.lt.ner.annotator.NERAnnotator;
-import de.tu.darmstadt.lt.ner.preprocessing.ChangeColon;
-import de.tu.darmstadt.lt.ner.preprocessing.Configuration;
-import de.tu.darmstadt.lt.ner.preprocessing.GermaNERMain;
-import de.tu.darmstadt.lt.ner.reader.NERReader;
-import de.tu.darmstadt.lt.ner.writer.EvaluatedNERWriter;
-import ml.anon.documentmanagement.resource.ReplacementResource;
-import ml.anon.anonymization.model.Anonymization;
-import ml.anon.anonymization.model.Anonymization.AnonymizationBuilder;
-import ml.anon.anonymization.model.Label;
-import ml.anon.anonymization.model.Producer;
-import ml.anon.documentmanagement.model.Document;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import javax.annotation.Resource;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngine;
+import static org.apache.uima.fit.pipeline.SimplePipeline.runPipeline;
 
 @Service
 @Slf4j
@@ -62,14 +46,14 @@ public class AnnotationService implements IAnnotationService {
   @Autowired
   private TrainingDataRepository trainingDataRepository;
 
+
   @Resource
   private ReplacementResource replacementResource;
 
-  // private final static String basePath = "." + File.separator + "src" + File.separator + "main"
-//      + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
+  private final static String basePath = "." + File.separator + "src" + File.separator + "main"
+      + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
 
-  private final static String basePath =
-      AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
+  //private final static String basePath = AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
 
 
   private final static String pathToTokenizedFile = ResourceUtil
@@ -201,13 +185,12 @@ public class AnnotationService implements IAnnotationService {
             EvaluatedNERWriter.SENTENCES_ID, aSentencesIds));
   }
 
+  /**
+   * Runs the GermaNER one time with just a dummy input to preload everything at server startup.
+   */
   public static void initGermaNER() {
 
-    System.out.println("initGermaNER Accessed");
-    long startTime = System.currentTimeMillis();
-
     c = new ChangeColon();
-
     PrintWriter out;
 
     try {
@@ -223,12 +206,7 @@ public class AnnotationService implements IAnnotationService {
     }
 
     if (prop == null) {
-      // load a properties file
-      long initNerModelB = System.currentTimeMillis();
       initNERModel();
-      long initNerModelA = System.currentTimeMillis();
-      System.out.println("Time to init: " + (initNerModelA - initNerModelB) + "ms");
-
     }
 
     try {
@@ -238,45 +216,23 @@ public class AnnotationService implements IAnnotationService {
       File outputtmpFile = File.createTempFile("result", ".tmp");
       File outputFile = new File(pathToOuputFile);
 
-      long initNerModelB = System.currentTimeMillis();
-
       // one classifyTestFile run to preload the data.zip
       c.normalize(Configuration.testFileName, Configuration.testFileName + ".normalized");
       classifyTestFile(modelDirectory, new File(Configuration.testFileName + ".normalized"),
           outputtmpFile, null, null);
       c.deNormalize(outputtmpFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
-      long initNerModelA = System.currentTimeMillis();
-      System.out
-          .println("Time to preload features: " + (initNerModelA - initNerModelB) / 1000 + "s");
-
-
     } catch (Exception e) {
       System.out.println("error in initGermaNER second try-catch");
       e.printStackTrace();
     }
-
-    long endTime = System.currentTimeMillis();
-    long totalTime = endTime - startTime;
-    System.out.println("Done in " + totalTime / 1000 + " seconds");
 
   }
 
   @Override
   public List<Anonymization> annotate(Document document) {
 
-    // initGermaNER();
-
-    String tokenizedFile = "";
-    for (String token : document.getChunks()) {
-      if (tokenizedFile.length() != 0) {
-        tokenizedFile += "\n";
-      }
-      tokenizedFile += token;
-    }
-
     File outputFile = new File(pathToOuputFile);
-
     System.out.println("Start tagging");
 
     PrintWriter out;
@@ -284,17 +240,17 @@ public class AnnotationService implements IAnnotationService {
     try (InputStream inputStream = new FileInputStream(outputFile.getAbsolutePath())) {
       File outputtmpFile = File.createTempFile("result", ".tmp");
       out = new PrintWriter(pathToTokenizedFile);
-      out.println(tokenizedFile);
+      for(String token : document.getChunks()){
+        out.println(token);
+      }
       out.close();
 
       c.normalize(Configuration.testFileName, Configuration.testFileName + ".normalized");
-
       classifyTestFile(modelDirectory, new File(Configuration.testFileName + ".normalized"),
           outputtmpFile, null, null);
-      // re-normalized the colon changed text
       c.deNormalize(outputtmpFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
-      anonymizations = receiveAnonymizations(inputStream, document);
+      anonymizations = this.receiveAnonymizations(inputStream, document.getFullText());
 
     } catch (UIMAException e) {
       // TODO Auto-generated catch block
@@ -312,7 +268,17 @@ public class AnnotationService implements IAnnotationService {
   }
 
 
-  private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream, Document document)
+  /**
+   * Builds up the original of the anonymizations from the tagged file. A original is the tagged sequence starting with
+   * a B- tag possibly followed by I- tags. Between these parts of the sequence there is used a placeholder for
+   * whitespaces (\s) to find the right original even if it contains a linebreak.
+   *
+   * @param inputStream the input stream of the tagged file
+   * @param fullText the raw full text of the uploaded document (to find the original)
+   * @return a list of {@link Anonymization} objects.
+   * @throws IOException
+   */
+  private ArrayList<Anonymization> receiveAnonymizations(InputStream inputStream, String fullText)
       throws IOException {
     ArrayList<Anonymization> anonymizations = new ArrayList<Anonymization>();
 
@@ -338,15 +304,15 @@ public class AnnotationService implements IAnnotationService {
       if (splitted[1].startsWith("B-")) {
         counter++;
         if (temp == (counter - 1)) {
-          original = this.findOriginal(original.trim(), document.getFullText());
+
           temp = counter;
 
+          original = this.findOriginal(original.trim(), fullText);
           anonymization.data(replacementResource
               .create(Replacement.builder().original(original).label(label).build()));
-
           anonymizations.add(anonymization.build());
-          original = "";
 
+          original = "";
         }
         String substring = splitted[1].substring(2);
         label = Label.getOrDefault(substring, Label.UNKNOWN); // Label - must exactly match!
@@ -359,11 +325,9 @@ public class AnnotationService implements IAnnotationService {
       }
     }
 
-    original = this.findOriginal(original.trim(), document.getFullText());
-
+    original = this.findOriginal(original.trim(), fullText);
     anonymization.data(replacementResource
         .create(Replacement.builder().original(original).label(label).build()));
-
     anonymizations.add(anonymization.build());
 
     inputStreamReader.close();
@@ -371,11 +335,10 @@ public class AnnotationService implements IAnnotationService {
   }
 
   /**
-   * Searches with pattern search for the right original to set the right one, even if the original
-   * goes over a line break
+   * Searches with pattern search for the right original to set the right one, even if the original goes over a line break
    *
-   * @param originalToFind original set up of annotated tokens with a \s* symbol between to find all
-   * originals even if a linebreak separates the tokens
+   * @param originalToFind original set up of annotated tokens with a \s* symbol between to find all originals even if
+   *                       a linebreak separates the tokens
    * @param fullText the raw text of the uploaded document
    * @return the first found match of the pattern search
    */
@@ -394,12 +357,6 @@ public class AnnotationService implements IAnnotationService {
 
   }
 
-  /**
-   * Calls outputTrainingData to have a training file to work with. Afterwards initializes the
-   * GermaNER component and retrains the model
-   *
-   * @return true if everything worked
-   */
   @Override
   public boolean retrain() {
 
@@ -444,14 +401,13 @@ public class AnnotationService implements IAnnotationService {
   }
 
   /**
-   * Loads the training data from the database and outputs it to a File on the pathToTrainingFile
-   * position, so the retrain function can work with it.
+   * Loads the training data from the database and outputs it to a File on the pathToTrainingFile position,
+   * so the retrain function can work with it.
    *
    * @return true if everything worked
    */
   private boolean outputTrainingData() {
-    TrainingData trainingData = trainingDataRepository.findAll()
-        .get(0);  //TODO: take function from trainingDataService
+    TrainingData trainingData = trainingDataRepository.findAll().get(0);  //TODO: take function from trainingDataService
     PrintWriter out;
     try {
       File trainingFile = new File(this.pathToTrainingFile);

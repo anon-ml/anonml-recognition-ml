@@ -36,7 +36,7 @@ public class TrainingDataService implements ITrainingDataService {
 
   @Value("${documentmanagement.service.url}")
   private String documentManagementUrl;
-
+  ;
   @Resource
   private DocumentResource documentResource;
 
