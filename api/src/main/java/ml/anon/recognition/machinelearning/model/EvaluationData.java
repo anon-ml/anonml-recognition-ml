@@ -1,12 +1,14 @@
 package ml.anon.recognition.machinelearning.model;
 
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * Data object to store evaluation data of the ml part of the application.
+ */
 @Data
 @NoArgsConstructor
 @org.springframework.data.mongodb.core.mapping.Document(collection = "EvaluationData")

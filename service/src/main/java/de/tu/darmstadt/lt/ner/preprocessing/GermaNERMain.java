@@ -50,6 +50,10 @@ import de.tu.darmstadt.lt.ner.reader.NERReader;
 import de.tu.darmstadt.lt.ner.writer.EvaluatedNERWriter;
 import de.tu.darmstadt.lt.ner.writer.SentenceToCRFTestFileWriter;
 
+/**
+ * Copy with adjustments of the GermaNERMain class from the GermaNER project to have access on its attribute and
+ * functions.
+ */
 public class GermaNERMain
 {
     private static final Logger LOG = Logger.getLogger(GermaNERMain.class.getName());

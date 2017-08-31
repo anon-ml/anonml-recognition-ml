@@ -49,6 +49,10 @@ import de.tu.darmstadt.lt.ner.util.GenerateNgram;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 
+/**
+ * Copy of the NERReader class from the GermaNER project to have access on the parameters and be able to
+ * make adjustments to parts
+ */
 public class NERReader
         extends JCasAnnotator_ImplBase {
 
