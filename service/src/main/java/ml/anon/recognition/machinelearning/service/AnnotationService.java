@@ -44,7 +44,7 @@ import static org.apache.uima.fit.pipeline.SimplePipeline.runPipeline;
 public class AnnotationService implements IAnnotationService {
 
   @Autowired
-  private TrainingDataRepository trainingDataRepository;
+  private TrainingDataService trainingDataService;
 
 
   @Resource
@@ -407,7 +407,7 @@ public class AnnotationService implements IAnnotationService {
    * @return true if everything worked
    */
   private boolean outputTrainingData() {
-    TrainingData trainingData = trainingDataRepository.findAll().get(0);  //TODO: take function from trainingDataService
+    TrainingData trainingData = trainingDataService.getTrainingData();
     PrintWriter out;
     try {
       File trainingFile = new File(this.pathToTrainingFile);
