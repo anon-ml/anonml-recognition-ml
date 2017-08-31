@@ -69,7 +69,6 @@ public class CrfSuiteWrapper {
 
   public CrfSuiteWrapper() {
     Executables exec = new Executables();
-    System.out.println("test");
     if (exec.isInstalled()) {
       logger.log(Level.FINE, "The CRFSuite is installed on the system");
       executable = new File(exec.getExecutableName());
@@ -102,16 +101,15 @@ public class CrfSuiteWrapper {
 
       // TODO: improve path
       String[] path = new String[] {"crfsuite", pd.toString(), "bin"};
-      String sep = "/";
+      String sep =  File.separator;
+      
       String p = "";
       for (String s : path) {
         p += s + sep;
       }
       System.out.println("print p : " + p);
       System.out.println(new File(".").getAbsolutePath());
-      System.out.println("testetsetset");
-      return ".\\" + p;
-      // return p;
+      return p;
 
     }
 
@@ -157,18 +155,7 @@ public class CrfSuiteWrapper {
       logger.log(Level.FINE, "CrfSuite Location " + loc);
       logger.log(Level.FINE, "CrfSuite Url: " + crfExecUrl);
 
-
-
-      // TODO: Edited here
-
-
-      // if (true){
-      // return new File(loc);
-      // }
-
-      File f;
-
-      f = new File(loc);
+      File f = new File(loc);
       f.setExecutable(true);
       System.out.println("f: " + f.getAbsolutePath());
       return f;
