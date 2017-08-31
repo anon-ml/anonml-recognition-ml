@@ -73,10 +73,10 @@ public class MLController {
 
   }
 
-  @RequestMapping(value = "/ml/post/training/data/", method = RequestMethod.POST)
-  public boolean postTrainingData(@RequestBody String importedTrainingData) {
+  @RequestMapping(value = "/ml/post/training/data/{resetOld}/", method = RequestMethod.POST)
+  public boolean postTrainingData(@RequestBody String importedTrainingData, @PathVariable("resetOld") boolean resetOld) {
 
-    return trainingDataService.appendToTrainingTxt(importedTrainingData);
+    return trainingDataService.appendToTrainingTxt(importedTrainingData, resetOld);
 
   }
 

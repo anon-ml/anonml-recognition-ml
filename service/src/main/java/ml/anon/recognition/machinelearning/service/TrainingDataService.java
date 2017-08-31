@@ -190,7 +190,7 @@ public class TrainingDataService implements ITrainingDataService {
       }
     }
 
-    if(!this.appendToTrainingTxt(stringBuilder.toString())){
+    if(!this.appendToTrainingTxt(stringBuilder.toString(), false)){
         return false;
     }
 
@@ -198,17 +198,23 @@ public class TrainingDataService implements ITrainingDataService {
   }
 
   @Override
-  public boolean appendToTrainingTxt(String trainingDataToAdd) {
+  public boolean appendToTrainingTxt(String trainingDataToAdd, boolean resetOld) {
       TrainingData trainingData = this.getTrainingData();
 
-      String trainingTxt = trainingData.getTrainingTxt();
+      if(resetOld){
+        trainingData.setTrainingTxt(trainingDataToAdd);
 
-      StringBuilder stringBuilder = new StringBuilder(trainingTxt);
-      if(!trainingTxt.equals("")){
+      } else {
+
+        String trainingTxt = trainingData.getTrainingTxt();
+
+        StringBuilder stringBuilder = new StringBuilder(trainingTxt);
+        if(!trainingTxt.equals("")){
           stringBuilder.append("\r\n");
+        }
+        stringBuilder.append(trainingDataToAdd);
+        trainingData.setTrainingTxt(stringBuilder.toString());
       }
-      stringBuilder.append(trainingDataToAdd);
-      trainingData.setTrainingTxt(stringBuilder.toString());
 
       trainingDataRepository.save(trainingData);
 

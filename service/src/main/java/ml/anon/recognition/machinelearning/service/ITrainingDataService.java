@@ -27,8 +27,9 @@ public interface ITrainingDataService {
   /**
    * Loads the actual training data from the database, appends the given training data and saves it.
    *
-   * @param trainingDataToAdd a String of the training data format which can be appended to the saved training data
+   * @param importedTrainingData a String of the training data format which can be appended to the saved training data
+   * @param resetOld a boolean if the existing training data should be kept or overwritten
    * @return true if everything worked
    */
-  public boolean appendToTrainingTxt(String importedTrainingData);
+  public boolean appendToTrainingTxt(String importedTrainingData, boolean resetOld);
 }
