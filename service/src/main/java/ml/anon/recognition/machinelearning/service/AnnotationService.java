@@ -16,7 +16,6 @@ import ml.anon.documentmanagement.model.Document;
 import ml.anon.documentmanagement.resource.ReplacementResource;
 import ml.anon.io.ResourceUtil;
 import ml.anon.recognition.machinelearning.model.TrainingData;
-import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
 import org.apache.commons.io.IOUtils;
 import org.apache.uima.UIMAException;
 import org.cleartk.ml.CleartkSequenceAnnotator;
@@ -198,6 +197,7 @@ public class AnnotationService implements IAnnotationService {
 
       BufferedReader in = new BufferedReader(new FileReader(pathToTrainingFile));
       buildInTrainingFile = IOUtils.toString(in);
+      buildInTrainingFile = buildInTrainingFile.trim();
 
       out = new PrintWriter(pathToTokenizedFile);
       out.println("init");
@@ -410,11 +410,20 @@ public class AnnotationService implements IAnnotationService {
     TrainingData trainingData = trainingDataService.getTrainingData();
     PrintWriter out;
     try {
+
+
       File trainingFile = new File(this.pathToTrainingFile);
       System.out.println("File: " + trainingFile.getAbsolutePath());
 
+      StringBuilder stringBuilder = new StringBuilder(buildInTrainingFile);
+      stringBuilder.append(System.lineSeparator());
+      if(!trainingData.getTrainingTxt().equals("")){
+        stringBuilder.append(System.lineSeparator());
+      }
+      stringBuilder.append(trainingData.getTrainingTxt());
+
       out = new PrintWriter(new FileOutputStream(trainingFile, false));
-      out.print(trainingData.getTrainingTxt());
+      out.print(stringBuilder.toString());
       out.close();
     } catch (FileNotFoundException e2) {
       e2.printStackTrace();

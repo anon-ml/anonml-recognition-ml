@@ -18,7 +18,6 @@ public interface ITrainingDataService {
   /**
    * Loads the saved training data to update it or to export it. If no training is saved yet, a new {@link TrainingData}
    * object is returned.
-   *
    * @return the found or initialized {@link TrainingData} object
    */
   public TrainingData getTrainingData();

@@ -1,13 +1,12 @@
 package ml.anon.recognition.machinelearning.service;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import javax.annotation.Resource;
+import ml.anon.anonymization.model.Anonymization;
+import ml.anon.anonymization.model.Label;
+import ml.anon.documentmanagement.model.Document;
+import ml.anon.documentmanagement.resource.DocumentResource;
 import ml.anon.recognition.machinelearning.model.AnonPlusTokens;
+import ml.anon.recognition.machinelearning.model.TrainingData;
+import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,12 +16,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import ml.anon.anonymization.model.Anonymization;
-import ml.anon.anonymization.model.Label;
-import ml.anon.documentmanagement.model.Document;
-import ml.anon.documentmanagement.resource.DocumentResource;
-import ml.anon.recognition.machinelearning.model.TrainingData;
-import ml.anon.recognition.machinelearning.repository.TrainingDataRepository;
+import javax.annotation.Resource;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Service to set up the new trainings file to later on retrain the model and improve the results.
@@ -208,10 +207,14 @@ public class TrainingDataService implements ITrainingDataService {
 
         String trainingTxt = trainingData.getTrainingTxt().trim();
         StringBuilder stringBuilder = new StringBuilder(trainingTxt);
-        stringBuilder.append(System.lineSeparator());
+        if(!trainingTxt.equals("")){
+          stringBuilder.append(System.lineSeparator());
+          stringBuilder.append(System.lineSeparator());
+        }
+
+        stringBuilder.append(trainingDataToAdd.trim());
         stringBuilder.append(System.lineSeparator());
 
-        stringBuilder.append(trainingDataToAdd);
         trainingData.setTrainingTxt(stringBuilder.toString());
       }
 
@@ -227,8 +230,7 @@ public class TrainingDataService implements ITrainingDataService {
 
     TrainingData trainingData = null;
     if (trainingDataList.size() == 0) {
-
-      trainingData = TrainingData.builder().trainingTxt(AnnotationService.buildInTrainingFile).build();
+      trainingData = TrainingData.builder().trainingTxt("").build();
     } else if (trainingDataList.size() == 1) {
       trainingData = trainingDataList.get(0);
     } else {
