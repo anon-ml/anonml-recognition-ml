@@ -186,7 +186,7 @@ public class TrainingDataService implements ITrainingDataService {
         stringBuilder.append(tokens.get(i) + "  " + annotations.get(i));
       }
       if(i < annotations.size()-1){
-        stringBuilder.append("\r\n");
+        stringBuilder.append(System.lineSeparator());
       }
     }
 
@@ -206,12 +206,11 @@ public class TrainingDataService implements ITrainingDataService {
 
       } else {
 
-        String trainingTxt = trainingData.getTrainingTxt();
-
+        String trainingTxt = trainingData.getTrainingTxt().trim();
         StringBuilder stringBuilder = new StringBuilder(trainingTxt);
-        if(!trainingTxt.equals("")){
-          stringBuilder.append("\r\n");
-        }
+        stringBuilder.append(System.lineSeparator());
+        stringBuilder.append(System.lineSeparator());
+
         stringBuilder.append(trainingDataToAdd);
         trainingData.setTrainingTxt(stringBuilder.toString());
       }
@@ -223,11 +222,13 @@ public class TrainingDataService implements ITrainingDataService {
 
   @Override
   public TrainingData getTrainingData() {
+
     List<TrainingData> trainingDataList = trainingDataRepository.findAll();
 
     TrainingData trainingData = null;
     if (trainingDataList.size() == 0) {
-      trainingData = TrainingData.builder().trainingTxt("").build();
+
+      trainingData = TrainingData.builder().trainingTxt(AnnotationService.buildInTrainingFile).build();
     } else if (trainingDataList.size() == 1) {
       trainingData = trainingDataList.get(0);
     } else {

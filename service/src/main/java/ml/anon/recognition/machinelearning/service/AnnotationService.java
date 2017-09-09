@@ -46,7 +46,6 @@ public class AnnotationService implements IAnnotationService {
   @Autowired
   private TrainingDataService trainingDataService;
 
-
   @Resource
   private ReplacementResource replacementResource;
 
@@ -69,6 +68,7 @@ public class AnnotationService implements IAnnotationService {
   static InputStream configFile = null;
   static File modelDirectory;
   static ChangeColon c;
+  static String buildInTrainingFile;
 
 
   private static void initNERModel() {
@@ -190,26 +190,24 @@ public class AnnotationService implements IAnnotationService {
    */
   public static void initGermaNER() {
 
+
     c = new ChangeColon();
     PrintWriter out;
 
     try {
+
+      BufferedReader in = new BufferedReader(new FileReader(pathToTrainingFile));
+      buildInTrainingFile = IOUtils.toString(in);
 
       out = new PrintWriter(pathToTokenizedFile);
       out.println("init");
       out.close();
 
       Configuration.testFileName = new File(pathToTokenizedFile).getAbsolutePath();
-    } catch (IOException e1) {
-      // TODO Auto-generated catch block
-      e1.printStackTrace();
-    }
 
-    if (prop == null) {
-      initNERModel();
-    }
-
-    try {
+      if (prop == null) {
+        initNERModel();
+      }
 
       setModelDir();
 
@@ -219,13 +217,15 @@ public class AnnotationService implements IAnnotationService {
       // one classifyTestFile run to preload the data.zip
       c.normalize(Configuration.testFileName, Configuration.testFileName + ".normalized");
       classifyTestFile(modelDirectory, new File(Configuration.testFileName + ".normalized"),
-          outputtmpFile, null, null);
+              outputtmpFile, null, null);
       c.deNormalize(outputtmpFile.getAbsolutePath(), outputFile.getAbsolutePath());
 
-    } catch (Exception e) {
-      System.out.println("error in initGermaNER second try-catch");
+    } catch (IOException e1) {
+      e1.printStackTrace();
+    } catch (UIMAException e) {
       e.printStackTrace();
     }
+
 
   }
 
