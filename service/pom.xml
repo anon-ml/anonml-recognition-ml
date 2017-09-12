@@ -32,6 +32,12 @@
       <version>2.9.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>de.flapdoodle.embed</groupId>
+      <artifactId>de.flapdoodle.embed.mongo</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
 </project>

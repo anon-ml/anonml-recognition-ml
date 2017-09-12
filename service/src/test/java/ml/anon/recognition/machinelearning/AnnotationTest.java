@@ -1,4 +1,5 @@
-import static org.hamcrest.CoreMatchers.containsString;
+package ml.anon.recognition.machinelearning;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -12,11 +13,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import ml.anon.recognition.machinelearning.service.AnnotationService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class AnnotationTest {
 
 
-  private AnnotationService annotationService = new AnnotationService();
+  @Autowired
+  private AnnotationService annotationService;
 
   @Test
   @Ignore

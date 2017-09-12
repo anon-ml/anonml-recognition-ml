@@ -199,23 +199,24 @@ public class TrainingDataService implements ITrainingDataService {
   @Override
   public boolean appendToTrainingTxt(String trainingDataToAdd, boolean resetOld) {
       TrainingData trainingData = this.getTrainingData();
+      StringBuilder stringBuilder = new StringBuilder(trainingDataToAdd.trim());
+      stringBuilder.append(System.lineSeparator());
 
       if(resetOld){
-        trainingData.setTrainingTxt(trainingDataToAdd);
+        trainingData.setTrainingTxt(stringBuilder.toString());
 
       } else {
 
         String trainingTxt = trainingData.getTrainingTxt().trim();
-        StringBuilder stringBuilder = new StringBuilder(trainingTxt);
+        StringBuilder stringBuilder2 = new StringBuilder(trainingTxt);
         if(!trainingTxt.equals("")){
-          stringBuilder.append(System.lineSeparator());
-          stringBuilder.append(System.lineSeparator());
+          stringBuilder2.append(System.lineSeparator());
+          stringBuilder2.append(System.lineSeparator());
         }
 
-        stringBuilder.append(trainingDataToAdd.trim());
-        stringBuilder.append(System.lineSeparator());
+        stringBuilder2.append(stringBuilder.toString());
 
-        trainingData.setTrainingTxt(stringBuilder.toString());
+        trainingData.setTrainingTxt(stringBuilder2.toString());
       }
 
       trainingDataRepository.save(trainingData);
