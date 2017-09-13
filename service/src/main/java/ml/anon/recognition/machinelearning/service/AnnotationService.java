@@ -7,11 +7,8 @@ import de.tu.darmstadt.lt.ner.preprocessing.GermaNERMain;
 import de.tu.darmstadt.lt.ner.reader.NERReader;
 import de.tu.darmstadt.lt.ner.writer.EvaluatedNERWriter;
 import lombok.extern.slf4j.Slf4j;
-import ml.anon.anonymization.model.Anonymization;
+import ml.anon.anonymization.model.*;
 import ml.anon.anonymization.model.Anonymization.AnonymizationBuilder;
-import ml.anon.anonymization.model.Label;
-import ml.anon.anonymization.model.Producer;
-import ml.anon.anonymization.model.Replacement;
 import ml.anon.documentmanagement.model.Document;
 import ml.anon.documentmanagement.resource.ReplacementResource;
 import ml.anon.io.ResourceUtil;
@@ -309,7 +306,7 @@ public class AnnotationService implements IAnnotationService {
 
           original = this.findOriginal(original.trim(), fullText);
           anonymization.data(replacementResource
-              .create(Replacement.builder().original(original).label(label).build()));
+              .create(Replacement.builder().original(original).label(label).build())).status(Status.PROCESSING);
           anonymizations.add(anonymization.build());
 
           original = "";
@@ -327,7 +324,7 @@ public class AnnotationService implements IAnnotationService {
 
     original = this.findOriginal(original.trim(), fullText);
     anonymization.data(replacementResource
-        .create(Replacement.builder().original(original).label(label).build()));
+        .create(Replacement.builder().original(original).label(label).build())).status(Status.PROCESSING);
     anonymizations.add(anonymization.build());
 
     inputStreamReader.close();
@@ -345,8 +342,6 @@ public class AnnotationService implements IAnnotationService {
   private String findOriginal(String originalToFind, String fullText) {
 
     String content = fullText;
-
-    //TODO: escape special characters! Except the \s*
 
     Pattern pattern = Pattern.compile(originalToFind);
     Matcher matcher = pattern.matcher(content);
