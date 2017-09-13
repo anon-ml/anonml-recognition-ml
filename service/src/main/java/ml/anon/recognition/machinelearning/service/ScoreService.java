@@ -4,6 +4,7 @@ package ml.anon.recognition.machinelearning.service;
 import ml.anon.anonymization.model.Anonymization;
 import ml.anon.anonymization.model.Label;
 import ml.anon.anonymization.model.Producer;
+import ml.anon.anonymization.model.Status;
 import ml.anon.documentmanagement.model.Document;
 import ml.anon.documentmanagement.resource.DocumentResource;
 import ml.anon.recognition.machinelearning.model.EvaluationData;
@@ -141,7 +142,9 @@ public class ScoreService implements IScoreService {
         List<Anonymization> filtered = new ArrayList<Anonymization>();
         for (Anonymization anonymization : anonymizations) {
 
-            if (anonymization.getProducer().equals(Producer.ML) || anonymization.getProducer().equals(Producer.HUMAN)
+            if (!anonymization.getStatus().equals(Status.DECLINED)
+                    && (anonymization.getProducer().equals(Producer.ML)
+                    || anonymization.getProducer().equals(Producer.HUMAN))
                     && (anonymization.getData().getLabel().equals(Label.MISC)
                     || anonymization.getData().getLabel().equals(Label.LOCATION)
                     || anonymization.getData().getLabel().equals(Label.ORGANIZATION)

@@ -2,6 +2,7 @@ package ml.anon.recognition.machinelearning.service;
 
 import ml.anon.anonymization.model.Anonymization;
 import ml.anon.anonymization.model.Label;
+import ml.anon.anonymization.model.Status;
 import ml.anon.documentmanagement.model.Document;
 import ml.anon.documentmanagement.resource.DocumentResource;
 import ml.anon.recognition.machinelearning.model.AnonPlusTokens;
@@ -113,10 +114,11 @@ public class TrainingDataService implements ITrainingDataService {
 
     for (Anonymization anonymization : anonymizations) {
 
-      if (anonymization.getData().getLabel().equals(Label.PERSON)
-          || anonymization.getData().getLabel().equals(Label.MISC)
-          || anonymization.getData().getLabel().equals(Label.ORGANIZATION)
-          || anonymization.getData().getLabel().equals(Label.LOCATION)) {
+      if (anonymization.getStatus().equals(Status.ACCEPTED)
+              && (anonymization.getData().getLabel().equals(Label.PERSON)
+              || anonymization.getData().getLabel().equals(Label.MISC)
+              || anonymization.getData().getLabel().equals(Label.ORGANIZATION)
+              || anonymization.getData().getLabel().equals(Label.LOCATION))) {
 
         List<String> tokensOfOriginal = this.tokenize(anonymization.getData().getOriginal());
 
