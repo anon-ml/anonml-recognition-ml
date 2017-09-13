@@ -316,10 +316,10 @@ public class AnnotationService implements IAnnotationService {
         }
         String substring = splitted[1].substring(2);
         label = Label.getOrDefault(substring, Label.UNKNOWN); // Label - must exactly match!
-        original += splitted[0]; // 1. Teil des Tags
+        original += Pattern.quote(splitted[0]); // 1. Teil des Tags
 
       } else if (splitted[1].startsWith("I-")) {
-        original += "\\s*" + splitted[0]; // 2. - n. Teil des tags
+        original += "\\s*" + Pattern.quote(splitted[0]); // 2. - n. Teil des tags
       } else {
         System.out.println("Unknown type: " + splitted[1]);
       }
@@ -345,6 +345,8 @@ public class AnnotationService implements IAnnotationService {
   private String findOriginal(String originalToFind, String fullText) {
 
     String content = fullText;
+
+    //TODO: escape special characters! Except the \s*
 
     Pattern pattern = Pattern.compile(originalToFind);
     Matcher matcher = pattern.matcher(content);
