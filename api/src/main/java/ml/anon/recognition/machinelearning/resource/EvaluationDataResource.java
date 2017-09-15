@@ -20,7 +20,11 @@ public class EvaluationDataResource implements Read<EvaluationData> {
 
     @Override
     public EvaluationData findById(String id) throws BadRequestException {
-        return restTemplate.getForEntity(mlUrl + "/ml/get/evaluation/data/", EvaluationData.class).getBody();
+        try {
+            return restTemplate.getForEntity(mlUrl + "/ml/get/evaluation/data/", EvaluationData.class).getBody();
+        } catch (Exception e) {
+            throw new BadRequestException();
+        }
     }
 
 
