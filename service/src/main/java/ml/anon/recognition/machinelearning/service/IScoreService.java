@@ -16,10 +16,9 @@ public interface IScoreService {
      * scores to see the quality of the generated {@link Anonymization}s
      *
      * @param documentId the id of the actual worked document which should be saved now
-     * @param correctAnonymizations the {@link Anonymization}s corrected by human interaction, serves as gold standard
      * @return true if everything went fine
      */
-    public boolean calculateScores(String documentId, List<Anonymization> correctAnonymizations);
+    public boolean calculateScores(String documentId);
 
     /**
      * Loads the saved {@link EvaluationData} from the database if there is already one saved or generates one initial

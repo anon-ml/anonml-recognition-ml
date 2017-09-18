@@ -59,10 +59,9 @@ public class MLController {
   }
 
   @RequestMapping(value = "/ml/calculate/f/one/{id}", method = RequestMethod.POST)
-  public boolean postCalculateFOne(@RequestBody List<Anonymization> correctAnonymizations,
-      @PathVariable String id) {
+  public boolean postCalculateFOne(@PathVariable String id) {
 
-    return scoreService.calculateScores(id, correctAnonymizations);
+    return scoreService.calculateScores(id);
 
   }
 
