@@ -362,7 +362,6 @@ public class AnnotationService implements IAnnotationService {
     if (!this.outputTrainingData()) {
       return false;
     }
-
     Configuration.trainFileName = new File(pathToTrainingFile).getAbsolutePath();
     initNERModel();
 
@@ -392,7 +391,6 @@ public class AnnotationService implements IAnnotationService {
       e.printStackTrace();
       return false;
     }
-
     return true;
 
   }
@@ -404,7 +402,7 @@ public class AnnotationService implements IAnnotationService {
    * @return true if everything worked
    */
   private boolean outputTrainingData() {
-    TrainingData trainingData = trainingDataService.getTrainingData();
+    TrainingData trainingData = trainingDataService.getBuildTrainingData();
     PrintWriter out;
     try {
 

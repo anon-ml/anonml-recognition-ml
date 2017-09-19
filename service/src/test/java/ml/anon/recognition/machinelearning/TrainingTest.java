@@ -77,7 +77,7 @@ public class TrainingTest {
 
         List<TrainingData> trainingData = trainingDataRepository.findAll();
 
-        assertThat(trainingDataService.appendToTrainingTxt(trainingTxt, false), is(true));
+        trainingDataService.appendToTrainingTxt(trainingTxt, false);
         List<TrainingData> trainingDataAfter = trainingDataRepository.findAll();
 
         assertThat(trainingData.size(), is(trainingDataAfter.size()));
@@ -95,7 +95,7 @@ public class TrainingTest {
         List<TrainingData> trainingData = trainingDataRepository.findAll();
         assertThat(trainingData.get(0).getTrainingTxt(), is(testString + System.lineSeparator()));
 
-        assertThat(trainingDataService.appendToTrainingTxt(trainingTxt, true), is(true));
+        trainingDataService.appendToTrainingTxt(trainingTxt, true);
         List<TrainingData> trainingDataAfter = trainingDataRepository.findAll();
 
         assertThat(trainingDataAfter.size(), is(trainingData.size()));

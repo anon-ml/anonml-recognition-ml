@@ -5,7 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.annotation.Resource;
-import javax.ws.rs.Path;
 
 import lombok.extern.java.Log;
 import ml.anon.exception.BadRequestException;
@@ -56,13 +55,6 @@ public class MLController {
 
   }
 
-  @RequestMapping(value = "/ml/update/training/data/{id}", method = RequestMethod.POST)
-  public boolean updateTrainingData(@PathVariable String id) {
-
-    return trainingDataService.updateTrainingData(id);
-
-  }
-
   @RequestMapping(value = "/ml/calculate/f/one/{id}", method = RequestMethod.POST)
   public boolean postCalculateFOne(@PathVariable String id) {
 
@@ -89,14 +81,15 @@ public class MLController {
   @RequestMapping(value = "/ml/post/training/data/{resetOld}/", method = RequestMethod.POST)
   public boolean postTrainingData(@RequestBody String importedTrainingData, @PathVariable("resetOld") boolean resetOld) {
 
-    return trainingDataService.appendToTrainingTxt(importedTrainingData, resetOld);
+    trainingDataService.appendToTrainingTxt(importedTrainingData, resetOld);
+    return true;
 
   }
 
   @RequestMapping(value = "/ml/get/training/data/", method = RequestMethod.GET)
   public String getTrainingDataAsString() {
 
-    return trainingDataService.getTrainingData().getTrainingTxt();
+    return trainingDataService.getBuildTrainingData().getTrainingTxt();
 
   }
 

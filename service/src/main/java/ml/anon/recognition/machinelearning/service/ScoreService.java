@@ -60,10 +60,6 @@ public class ScoreService implements IScoreService {
         double recall = correctFound / corrected;
         double fOneScore = this.calculatetFOne(precision, recall);
 
-        System.out.println("Precision: " + precision);
-        System.out.println("Recall: " + recall);
-        System.out.println("F1: " + fOneScore);
-
         if(documentId != null){
             DocEvaluation docEvaluation = docEvaluationRepository.findByDocumentId(documentId);
             if(docEvaluation == null){

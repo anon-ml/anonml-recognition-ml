@@ -43,7 +43,71 @@ public class TrainingDataService implements ITrainingDataService {
   @Autowired
   private TrainingDataRepository trainingDataRepository;
 
-  public boolean updateTrainingData(String documentId) {
+  @Override
+  public TrainingData getBuildTrainingData(){
+
+    TrainingData trainingData = TrainingData.builder().build();
+    StringBuilder stringBuilder = this.prepareTrainingTxt(this.getSavedTrainingData().getTrainingTxt());
+
+    for(Document document : this.documentResource.findAll(-1)) {
+      if(!this.documentFinished(document)){
+        continue;
+      }
+      stringBuilder.append(this.prepareTrainingTxt(this.buildTrainingDataOfDocument(document.getId()).trim()));
+    }
+    stringBuilder = new StringBuilder(stringBuilder.toString().trim());
+    stringBuilder.append(System.lineSeparator());
+    trainingData.setTrainingTxt(stringBuilder.toString());
+
+    return trainingData;
+  }
+
+  @Override
+  public TrainingData appendToTrainingTxt(String trainingDataToAdd, boolean resetOld) {
+
+    TrainingData trainingData = this.getSavedTrainingData();
+    StringBuilder stringBuilder = new StringBuilder(trainingDataToAdd.trim());
+    stringBuilder.append(System.lineSeparator());
+
+    if(resetOld){
+      trainingData.setTrainingTxt(stringBuilder.toString());
+
+    } else {
+      StringBuilder stringBuilder2 = this.prepareTrainingTxt(trainingData.getTrainingTxt());
+      stringBuilder2.append(stringBuilder.toString());
+
+      trainingData.setTrainingTxt(stringBuilder2.toString());
+    }
+
+    trainingDataRepository.save(trainingData);
+
+    return trainingData;
+  }
+
+  /**
+   * Prepares the snippet of training data to set more together with a empty line in between
+   * @param trainingData snippet to prepare
+   * @return a StrinBuilder containing the prepared trainingData string
+   */
+  private StringBuilder prepareTrainingTxt(String trainingData) {
+    String trainingTxt = trainingData.trim();
+    StringBuilder stringBuilder2 = new StringBuilder(trainingTxt);
+    if(!trainingTxt.equals("")){
+      stringBuilder2.append(System.lineSeparator());
+      stringBuilder2.append(System.lineSeparator());
+    }
+    return stringBuilder2;
+  }
+
+  /**
+   * Sets up the training data from the manually controlled and edited document.
+   * Only places the annotations (misc, person, location and organization) which are produces by the ml module to the
+   * corresponding tokens. All other tokens receive the "O" (other) annotation.
+   *
+   * @param documentId id of the edited document
+   * @return true if everything worked
+   */
+  private String buildTrainingDataOfDocument(String documentId) {
 
     Document document = documentResource.findById(documentId);
 
@@ -61,9 +125,7 @@ public class TrainingDataService implements ITrainingDataService {
     List<AnonPlusTokens> anonsWithTokens = this.getAnonPlusTokens(document.getAnonymizations());
 
     for (AnonPlusTokens anons : anonsWithTokens) {
-
       indexesOfToken = this.getOccurrencesOfOriginal(document.getChunks(), anons.getTokens());
-
       for (Integer occurrence : indexesOfToken) {
         // -1 because of the empty token produced by the tokenizer
         for (int i = 0; i < anons.getTokens().size() - 1; ++i) {
@@ -76,9 +138,7 @@ public class TrainingDataService implements ITrainingDataService {
       }
     }
 
-    this.appendToExisting(document.getChunks(), annotations);
-
-    return true;
+    return this.setUpTrainingFormat(document.getChunks(), annotations);
   }
 
   /**
@@ -176,7 +236,7 @@ public class TrainingDataService implements ITrainingDataService {
      * @param annotations list of annotations corresponding to the tokens (e.g.: B-Person, I-Person, ...)
      * @return true if everything worked
      */
-  private boolean appendToExisting(List<String> tokens, List<String> annotations) {
+  private String setUpTrainingFormat(List<String> tokens, List<String> annotations) {
 
     StringBuilder stringBuilder = new StringBuilder();
 
@@ -190,44 +250,30 @@ public class TrainingDataService implements ITrainingDataService {
         stringBuilder.append(System.lineSeparator());
       }
     }
+    return stringBuilder.toString();
+  }
 
-    if(!this.appendToTrainingTxt(stringBuilder.toString(), false)){
+  /**
+   * Checks if no more Anonymization is still in the Processing status
+   * @param document to check the status of the Anonymizations
+   * @return true if all Anonymizations of the document are Accepted or Declined
+   */
+  private boolean documentFinished(Document document) {
+
+    for(Anonymization anonymization : document.getAnonymizations()){
+      if(anonymization.getStatus().equals(Status.PROCESSING)){
         return false;
+      }
     }
-
     return true;
   }
 
-  @Override
-  public boolean appendToTrainingTxt(String trainingDataToAdd, boolean resetOld) {
-      TrainingData trainingData = this.getTrainingData();
-      StringBuilder stringBuilder = new StringBuilder(trainingDataToAdd.trim());
-      stringBuilder.append(System.lineSeparator());
-
-      if(resetOld){
-        trainingData.setTrainingTxt(stringBuilder.toString());
-
-      } else {
-
-        String trainingTxt = trainingData.getTrainingTxt().trim();
-        StringBuilder stringBuilder2 = new StringBuilder(trainingTxt);
-        if(!trainingTxt.equals("")){
-          stringBuilder2.append(System.lineSeparator());
-          stringBuilder2.append(System.lineSeparator());
-        }
-
-        stringBuilder2.append(stringBuilder.toString());
-
-        trainingData.setTrainingTxt(stringBuilder2.toString());
-      }
-
-      trainingDataRepository.save(trainingData);
-
-      return true;
-  }
-
-  @Override
-  public TrainingData getTrainingData() {
+  /**
+   * Loads the saved training data to update it or to export it. If no training is saved yet, a new {@link TrainingData}
+   * object is returned.
+   * @return the found or initialized {@link TrainingData} object
+   */
+  private TrainingData getSavedTrainingData() {
 
     List<TrainingData> trainingDataList = trainingDataRepository.findAll();
 
