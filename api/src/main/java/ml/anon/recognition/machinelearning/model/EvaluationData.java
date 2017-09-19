@@ -27,8 +27,4 @@ public class EvaluationData extends BaseEntity {
     private double overallRecall;
     private double overallFOne;
 
-    private List<Double> lastTenPrecision;
-    private List<Double> lastTenRecall;
-    private List<Double> lastTenFOne;
-
 }

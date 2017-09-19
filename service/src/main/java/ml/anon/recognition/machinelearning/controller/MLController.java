@@ -5,10 +5,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.ws.rs.Path;
 
 import lombok.extern.java.Log;
 import ml.anon.exception.BadRequestException;
 import ml.anon.recognition.machinelearning.model.EvaluationData;
+import ml.anon.recognition.machinelearning.repository.DocEvaluationRepository;
 import ml.anon.recognition.machinelearning.service.IScoreService;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,6 +41,9 @@ public class MLController {
   @Resource
   private IScoreService scoreService;
 
+  @Resource
+  private DocEvaluationRepository docEvaluationRepository;
+
   private boolean retrains = false;
   private LocalDateTime retrainStarted;
 
@@ -61,16 +66,25 @@ public class MLController {
   @RequestMapping(value = "/ml/calculate/f/one/{id}", method = RequestMethod.POST)
   public boolean postCalculateFOne(@PathVariable String id) {
 
-    return scoreService.calculateScores(id);
+    return scoreService.prepareNumbers(id);
 
   }
 
   @RequestMapping(value = "/ml/get/evaluation/data/", method = RequestMethod.GET)
   public EvaluationData getEvaluationData() {
 
-    return scoreService.getEvaluationData();
+    return scoreService.getOverallEvaluationData();
 
   }
+
+  @RequestMapping(value = "/ml/get/doc/evaluation/{documentId}", method = RequestMethod.GET)
+  public EvaluationData getDocEvaluation(@PathVariable("documentId") String documentId) {
+
+    return docEvaluationRepository.findByDocumentId(documentId);
+
+  }
+
+
 
   @RequestMapping(value = "/ml/post/training/data/{resetOld}/", method = RequestMethod.POST)
   public boolean postTrainingData(@RequestBody String importedTrainingData, @PathVariable("resetOld") boolean resetOld) {

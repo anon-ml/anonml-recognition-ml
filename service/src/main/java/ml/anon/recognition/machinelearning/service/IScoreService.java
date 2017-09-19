@@ -18,7 +18,7 @@ public interface IScoreService {
      * @param documentId the id of the actual worked document which should be saved now
      * @return true if everything went fine
      */
-    public boolean calculateScores(String documentId);
+    public boolean prepareNumbers(String documentId);
 
     /**
      * Loads the saved {@link EvaluationData} from the database if there is already one saved or generates one initial
@@ -26,5 +26,5 @@ public interface IScoreService {
      *
      * @return the found or generated {@link EvaluationData}
      */
-    public EvaluationData getEvaluationData();
+    public EvaluationData getOverallEvaluationData();
 }
