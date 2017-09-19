@@ -66,6 +66,9 @@ public class ScoreService implements IScoreService {
 
         if(documentId != null){
             DocEvaluation docEvaluation = docEvaluationRepository.findByDocumentId(documentId);
+            if(docEvaluation == null){
+                docEvaluation = DocEvaluation.builder().documentId(documentId).build();
+            }
 
             docEvaluation.setTotalCorrected(corrected);
             docEvaluation.setTotalGenerated(generated);
@@ -109,7 +112,6 @@ public class ScoreService implements IScoreService {
             totalCorrectFound += docEvaluation.getTotalNumberOfCorrectFound();
         }
         return this.calculateScores(totalGenerated, totalCorrected, totalCorrectFound, null);
-        // Collections.sort(evaluationDatas, Comparator.comparing(EvaluationData::getCreated));
     }
 
     /**
