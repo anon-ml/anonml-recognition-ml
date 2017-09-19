@@ -19,12 +19,12 @@ import java.util.List;
 @org.springframework.data.mongodb.core.mapping.Document(collection = "EvaluationData")
 public class EvaluationData extends BaseEntity {
 
-    private double totalGenerated;
-    private double totalCorrected;
-    private double totalNumberOfCorrectFound;
+    private double generated;
+    private double corrected;
+    private double correctFound;
 
-    private double overallPrecision;
-    private double overallRecall;
-    private double overallFOne;
+    private double precision;
+    private double recall;
+    private double fOne;
 
 }

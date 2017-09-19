@@ -66,13 +66,13 @@ public class ScoreService implements IScoreService {
                 docEvaluation = DocEvaluation.builder().documentId(documentId).build();
             }
 
-            docEvaluation.setTotalCorrected(corrected);
-            docEvaluation.setTotalGenerated(generated);
-            docEvaluation.setTotalNumberOfCorrectFound(correctFound);
+            docEvaluation.setCorrected(corrected);
+            docEvaluation.setGenerated(generated);
+            docEvaluation.setCorrectFound(correctFound);
 
-            docEvaluation.setOverallPrecision(precision);
-            docEvaluation.setOverallRecall(recall);
-            docEvaluation.setOverallFOne(fOneScore);
+            docEvaluation.setPrecision(precision);
+            docEvaluation.setRecall(recall);
+            docEvaluation.setFOne(fOneScore);
 
             docEvaluationRepository.save(docEvaluation);
             return docEvaluation;
@@ -80,13 +80,13 @@ public class ScoreService implements IScoreService {
         } else {
             EvaluationData evaluationData = new EvaluationData();
 
-            evaluationData.setTotalCorrected(corrected);
-            evaluationData.setTotalGenerated(generated);
-            evaluationData.setTotalNumberOfCorrectFound(correctFound);
+            evaluationData.setCorrected(corrected);
+            evaluationData.setGenerated(generated);
+            evaluationData.setCorrectFound(correctFound);
 
-            evaluationData.setOverallPrecision(precision);
-            evaluationData.setOverallRecall(recall);
-            evaluationData.setOverallFOne(fOneScore);
+            evaluationData.setPrecision(precision);
+            evaluationData.setRecall(recall);
+            evaluationData.setFOne(fOneScore);
 
             return evaluationData;
         }
@@ -103,9 +103,9 @@ public class ScoreService implements IScoreService {
         double totalCorrectFound = 0;
 
         for (DocEvaluation docEvaluation: docEvaluationRepository.findAll()) {
-            totalGenerated += docEvaluation.getTotalGenerated();
-            totalCorrected += docEvaluation.getTotalCorrected();
-            totalCorrectFound += docEvaluation.getTotalNumberOfCorrectFound();
+            totalGenerated += docEvaluation.getGenerated();
+            totalCorrected += docEvaluation.getCorrected();
+            totalCorrectFound += docEvaluation.getCorrectFound();
         }
         return this.calculateScores(totalGenerated, totalCorrected, totalCorrectFound, null);
     }
