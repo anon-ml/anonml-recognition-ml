@@ -22,6 +22,7 @@ import org.cleartk.ml.jar.DirectoryDataWriterFactory;
 import org.cleartk.ml.jar.GenericJarClassifierFactory;
 import org.cleartk.util.cr.FilesCollectionReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -45,10 +46,13 @@ public class AnnotationService implements IAnnotationService {
     @Resource
     private ReplacementResource replacementResource;
 
+    @Resource
+    private static ResourceLoader loader;
+
     /* private final static String basePath = "." + File.separator + "src" + File.separator + "main"
          + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
    */
-    private final static String basePath = AnnotationService.class.getResource(File.separator + "GermaNER").getPath() + File.separator;
+    private final static String pathToModel = "/model";
 
 
     private final static String pathToTokenizedFile = ResourceUtil
@@ -57,7 +61,8 @@ public class AnnotationService implements IAnnotationService {
             .getPath("GermaNER" + File.separator + "config.properties");
     private final static String pathToOuputFile = ResourceUtil
             .getPath("GermaNER" + File.separator + "taggedFile.txt");
-    private final static String pathToModel = basePath + "model";
+
+
     public final static String pathToTrainingFile = ResourceUtil
             .getPath("GermaNER" + File.separator + "trainingsFile.txt");
     static Properties prop;
@@ -133,6 +138,7 @@ public class AnnotationService implements IAnnotationService {
             IOUtils.copyLarge(ResourceUtil.getStream("model/model.jar"),
                     new FileOutputStream(new File(modelDirectory, "model.jar")));
         }
+
         if (!new File(modelDirectory, "MANIFEST.MF").exists()) {
             IOUtils.copyLarge(ResourceUtil.getStream("model/MANIFEST.MF"),
                     new FileOutputStream(new File(modelDirectory, "MANIFEST.MF")));
