@@ -46,9 +46,6 @@ public class AnnotationService implements IAnnotationService {
     @Resource
     private ReplacementResource replacementResource;
 
-    @Resource
-    private static ResourceLoader loader;
-
     /* private final static String basePath = "." + File.separator + "src" + File.separator + "main"
          + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
    */
