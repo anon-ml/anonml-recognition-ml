@@ -49,7 +49,7 @@ public class AnnotationService implements IAnnotationService {
     /* private final static String basePath = "." + File.separator + "src" + File.separator + "main"
          + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
    */
-    private final static String pathToModel = "/model";
+    private final static String pathToModel = "/home/linuxbrew/model";
 
 
     private final static String pathToTokenizedFile = ResourceUtil
@@ -134,15 +134,18 @@ public class AnnotationService implements IAnnotationService {
         if (!new File(modelDirectory, "model.jar").exists()) {
             IOUtils.copyLarge(ResourceUtil.getStream("model/model.jar"),
                     new FileOutputStream(new File(modelDirectory, "model.jar")));
+            System.out.println("copy model jar");
         }
 
         if (!new File(modelDirectory, "MANIFEST.MF").exists()) {
             IOUtils.copyLarge(ResourceUtil.getStream("model/MANIFEST.MF"),
                     new FileOutputStream(new File(modelDirectory, "MANIFEST.MF")));
+            System.out.println("copy manifest");
         }
         if (!new File(modelDirectory, "feature.xml").exists()) {
             IOUtils.copyLarge(ResourceUtil.getStream("feature/feature.xml"),
                     new FileOutputStream(new File(modelDirectory, "feature.xml")));
+            System.out.println("copy feature jar");
         }
     }
 
