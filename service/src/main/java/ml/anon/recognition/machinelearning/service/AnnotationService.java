@@ -348,6 +348,9 @@ public class AnnotationService implements IAnnotationService {
      */
     private String findOriginal(String originalToFind, String fullText) {
         try {
+            System.out.println(originalToFind);
+            System.out.println(StringUtils.abbreviate(fullText, 100));
+            System.out.println("----");
             log.info("FIND ORIGINAL");
             log.info(originalToFind);
             log.info(StringUtils.abbreviate(fullText, 100));
