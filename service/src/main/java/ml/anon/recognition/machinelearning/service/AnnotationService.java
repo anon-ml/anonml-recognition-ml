@@ -14,6 +14,7 @@ import ml.anon.documentmanagement.resource.ReplacementResource;
 import ml.anon.io.ResourceUtil;
 import ml.anon.recognition.machinelearning.model.TrainingData;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UIMAException;
 import org.cleartk.ml.CleartkSequenceAnnotator;
 import org.cleartk.ml.crfsuite.CrfSuiteStringOutcomeDataWriter;
@@ -347,6 +348,9 @@ public class AnnotationService implements IAnnotationService {
      */
     private String findOriginal(String originalToFind, String fullText) {
         try {
+            log.info("FIND ORIGINAL");
+            log.info(originalToFind);
+            log.info(StringUtils.abbreviate(fullText, 100));
             String content = fullText;
 
             Pattern pattern = Pattern.compile(originalToFind);
@@ -358,8 +362,9 @@ public class AnnotationService implements IAnnotationService {
 
             return content.substring(startIndex, endIndex);
         } catch (Exception e) {
+            log.info("ERROR");
             log.error(e.getLocalizedMessage());
-            return "not found";
+            return originalToFind;
         }
 
 
