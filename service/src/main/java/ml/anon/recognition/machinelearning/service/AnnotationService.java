@@ -346,17 +346,22 @@ public class AnnotationService implements IAnnotationService {
      * @return the first found match of the pattern search
      */
     private String findOriginal(String originalToFind, String fullText) {
+        try {
+            String content = fullText;
 
-        String content = fullText;
+            Pattern pattern = Pattern.compile(originalToFind);
+            Matcher matcher = pattern.matcher(content);
 
-        Pattern pattern = Pattern.compile(originalToFind);
-        Matcher matcher = pattern.matcher(content);
+            matcher.find();
+            int startIndex = matcher.start();
+            int endIndex = matcher.end();
 
-        matcher.find();
-        int startIndex = matcher.start();
-        int endIndex = matcher.end();
+            return content.substring(startIndex, endIndex);
+        } catch (Exception e) {
+            log.error(e.getLocalizedMessage());
+            return "not found";
+        }
 
-        return content.substring(startIndex, endIndex);
 
     }
 
