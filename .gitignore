@@ -34,8 +34,6 @@ overridedb.*
 *.ipr
 *.iws
 .idea
-*.jar
-!src/main/resources/GermaNER/model/model.jar
 .DS_Store
 dump.rdb
 transaction-logs
