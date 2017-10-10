@@ -102,6 +102,7 @@ public class ScoreService implements IScoreService {
         double totalCorrected = 0;
         double totalCorrectFound = 0;
 
+        // TODO: delete DocEvaluation if Document is deleted?
         for (DocEvaluation docEvaluation: docEvaluationRepository.findAll()) {
             totalGenerated += docEvaluation.getGenerated();
             totalCorrected += docEvaluation.getCorrected();
