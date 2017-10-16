@@ -106,6 +106,19 @@ public class ScoreService implements IScoreService {
         return (2 * precision * recall) / (precision + recall);
     }
 
+
+    private Date normalize(Date date) {
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        return calendar.getTime();
+    }
+
     @Override
     public EvaluationData getOverallEvaluationData() {
         double totalGenerated = 0;
@@ -117,7 +130,11 @@ public class ScoreService implements IScoreService {
 
 
         // TODO: delete DocEvaluation if Document is deleted?
-        List<DocEvaluation> all = docEvaluationRepository.findAll().stream().filter(eval -> eval.getCreated().after(Iterables.getFirst(dates, new Configuration(new Date(0L))).getResetDate())).collect(Collectors.toList());
+        List<DocEvaluation> all = docEvaluationRepository.findAll().stream().filter((DocEvaluation eval) -> {
+            Date maxDate = Iterables.getFirst(dates, new Configuration(new Date(0L))).getResetDate();
+            Date comp = eval.getCreated();
+            return normalize(comp).equals(normalize(maxDate)) || normalize(comp).after(normalize(maxDate));
+        }).collect(Collectors.toList());
         for (DocEvaluation docEvaluation : all) {
             totalGenerated += docEvaluation.getGenerated();
             totalCorrected += docEvaluation.getCorrected();
