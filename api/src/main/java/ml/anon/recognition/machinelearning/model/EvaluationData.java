@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import java.util.List;
 @org.springframework.data.mongodb.core.mapping.Document(collection = "EvaluationData")
 public class EvaluationData extends BaseEntity {
 
+    private Date lastReset;
     private double generated;
     private double corrected;
     private double correctFound;
