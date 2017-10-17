@@ -47,14 +47,14 @@ public class AnnotationService implements IAnnotationService {
     @Resource
     private ReplacementResource replacementResource;
 
-   /*
+
     private final static String basePath = "." + File.separator + "src" + File.separator + "main"
             + File.separator + "resources" + File.separator + "GermaNER" + File.separator + "";
-    private final static String pathToModel = basePath + "model"; //"/home/linuxbrew/model";
-    */
+    private final static String pathToModel = basePath + "model";
 
+/*
     private final static String pathToModel = "/home/linuxbrew/model";
-
+*/
 
     private final static String pathToTokenizedFile = ResourceUtil
             .getPath("GermaNER" + File.separator + "temp-file-to-annotate.txt");
