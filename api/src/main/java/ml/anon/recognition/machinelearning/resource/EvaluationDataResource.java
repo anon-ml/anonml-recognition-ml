@@ -28,6 +28,14 @@ public class EvaluationDataResource implements Read<EvaluationData> {
         }
     }
 
+    public EvaluationData reset() {
+        try {
+            return restTemplate.getForEntity(mlUrl + "/ml/get/evaluation/reset/", EvaluationData.class).getBody();
+        } catch (Exception e) {
+            throw new BadRequestException();
+        }
+    }
+
     public DocEvaluation findByDocumentId(String documentId) throws BadRequestException {
         try {
             return restTemplate.getForEntity(mlUrl + "/ml/get/doc/evaluation/" + documentId, DocEvaluation.class).getBody();
